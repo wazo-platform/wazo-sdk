@@ -209,6 +209,18 @@ class FileSwapper(object):
         path_stat = os.lstat(path)
         return stat.S_ISLNK(path_stat.st_mode)
 
+# XXX: not sure if this code works with this version of xivoswap, but this is the concept
+#     def link_to(self, source_path, dest_path):
+#         for line in open('/proc/mounts'):
+#             if source_path == line.split()[1]:
+#                 print (source_path + ' is already mounted')
+#                 break
+#         else:
+#             subprocess.call(['mount', '-o', 'bind', dest_path, source_path])
+
+#     def restore(self, path):
+#         subprocess.call(['umount', path])
+
 
 class ModuleAgent(CompoundModule):
     daemon = 'xivo-agentd'
