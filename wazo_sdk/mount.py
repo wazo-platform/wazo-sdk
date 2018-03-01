@@ -13,7 +13,7 @@ def _list_processes():
     for pid in psutil.pids():
         try:
             with open(os.path.join('/proc', str(pid), 'cmdline', ), 'r') as f:
-                yield pid, f.read()
+                yield pid, f.read()[:-1]
         except IOError:
             # Process already completed
             pass
@@ -37,7 +37,7 @@ class Mounter:
             if 'lsyncd' not in cmd:
                 continue
 
-            yield pid, cmd.split('/')[-1][:-1]
+            yield pid, cmd.split('/')[-1]
 
     def _is_mounted(self, repo_name):
         for pid, repo in self._list_sync():
