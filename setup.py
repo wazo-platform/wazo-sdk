@@ -20,6 +20,7 @@ setup(
         ],
         'wazo_sdk.commands': [
             'mount = wazo_sdk.commands.mount:Mount',
+            'umount = wazo_sdk.commands.mount:Umount',
         ],
     },
 )
