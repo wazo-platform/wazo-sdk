@@ -43,7 +43,7 @@ class Mounter:
         self._hostname = hostname
         self._local_dir = local_dir
         # TODO: make this configurable
-        self._remote_dir = '/root/dev/wazo'
+        self._remote_dir = '/usr/src/wazo'
 
     def list_(self):
         for pid, repo in self._list_sync():
