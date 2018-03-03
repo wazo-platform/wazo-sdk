@@ -22,12 +22,12 @@ def _list_processes():
 
 class Mounter:
 
-    def __init__(self, logger, hostname, local_dir, remote_dir, project_config):
+    def __init__(self, logger, config):
         self.logger = logger
-        self._hostname = hostname
-        self._local_dir = local_dir
-        self._remote_dir = remote_dir
-        self._project_config = project_config
+        self._config = config
+        self._hostname = config.hostname
+        self._local_dir = config.local_source
+        self._remote_dir = config.remote_source
 
     def list_(self):
         for pid, repo in self._list_sync():
@@ -59,7 +59,7 @@ class Mounter:
         else:
             self._start_sync(complete_repo_name)
 
-        repo_config = self._project_config.get(complete_repo_name)
+        repo_config = self._config.get_project(complete_repo_name)
         self._apply_mount(complete_repo_name, repo_config)
 
     def umount(self, repo_name):
@@ -68,7 +68,7 @@ class Mounter:
 
         complete_repo_name = self._find_complete_repo_name(repo_name)
 
-        repo_config = self._project_config.get(complete_repo_name)
+        repo_config = self._config.get_project(complete_repo_name)
         self._unapply_mount(complete_repo_name, repo_config)
 
         if not self._is_mounted(complete_repo_name):
@@ -170,13 +170,17 @@ class Mounter:
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _wait_for_file(self, ssh, filename):
-        ssh('while [ -f {} ]; do sleep 0.2; done'.format(filename))
+        ssh('while [ ! -f {} ]; do sleep 0.2; done'.format(filename))
 
     def _start_sync(self, repo_name):
         local_path = os.path.join(self._local_dir, repo_name)
         remote_path = os.path.join(self._remote_dir, repo_name)
 
-        lsync_command = ['lsyncd', '-delay', '1', '-rsyncssh', local_path, self._hostname, remote_path]
+        lsync_command = [
+            'lsyncd',
+            '-delay', '1',
+            '-rsyncssh', local_path, self._hostname, remote_path,
+        ]
 
         self.logger.debug('%s', ' '.join(lsync_command))
         ret = subprocess.call(lsync_command)
