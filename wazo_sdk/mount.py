@@ -17,6 +17,8 @@ REPOS = {
         },
         'clean': [
             '/usr/local/bin/wazo-auth',
+            '/usr/local/bin/wazo-auth-init-db',
+            '/usr/local/bin/wazo-auth-bootstrap',
         ],
     },
     'xivo-dao': {
@@ -105,9 +107,6 @@ class Mounter:
         binds = config.get('bind')
         if binds:
             self._bind_files(wazo, repo_name, binds)
-        clean = config.get('clean')
-        if clean:
-            self._clean_files(wazo, clean)
 
     def _unapply_mount(self, repo_name, config):
         if not config:
@@ -122,6 +121,9 @@ class Mounter:
         binds = config.get('bind')
         if binds:
             self._remove_bind_files(wazo, repo_name, binds)
+        clean = config.get('clean')
+        if clean:
+            self._clean_files(wazo, clean)
 
     def _bind_files(self, ssh, repo_name, binds):
         mount_output = ssh('mount').strip().split('\n')
