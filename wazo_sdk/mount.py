@@ -40,12 +40,11 @@ def _list_processes():
 
 class Mounter:
 
-    def __init__(self, logger, hostname, local_dir):
+    def __init__(self, logger, hostname, local_dir, remote_dir):
         self.logger = logger
         self._hostname = hostname
         self._local_dir = local_dir
-        # TODO: make this configurable
-        self._remote_dir = '/usr/src/wazo'
+        self._remote_dir = remote_dir
 
     def list_(self):
         for pid, repo in self._list_sync():
