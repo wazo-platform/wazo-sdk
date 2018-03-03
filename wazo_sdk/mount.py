@@ -8,24 +8,6 @@ import signal
 import subprocess
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
-REPOS = {
-    'wazo-auth': {
-        'python2': True,
-        'bind': {
-            'alembic': '/usr/share/wazo-auth/alembic',
-            'etc/wazo-auth/config.yml': '/etc/wazo-auth/config.yml',
-        },
-        'clean': [
-            '/usr/local/bin/wazo-auth',
-            '/usr/local/bin/wazo-auth-init-db',
-            '/usr/local/bin/wazo-auth-bootstrap',
-        ],
-    },
-    'xivo-dao': {
-        'python2': True,
-        'python3': True,
-    },
-}
 
 
 def _list_processes():
@@ -40,11 +22,12 @@ def _list_processes():
 
 class Mounter:
 
-    def __init__(self, logger, hostname, local_dir, remote_dir):
+    def __init__(self, logger, hostname, local_dir, remote_dir, project_config):
         self.logger = logger
         self._hostname = hostname
         self._local_dir = local_dir
         self._remote_dir = remote_dir
+        self._project_config = project_config
 
     def list_(self):
         for pid, repo in self._list_sync():
@@ -76,7 +59,7 @@ class Mounter:
         else:
             self._start_sync(complete_repo_name)
 
-        repo_config = REPOS.get(complete_repo_name)
+        repo_config = self._project_config.get(complete_repo_name)
         self._apply_mount(complete_repo_name, repo_config)
 
     def umount(self, repo_name):
@@ -85,7 +68,7 @@ class Mounter:
 
         complete_repo_name = self._find_complete_repo_name(repo_name)
 
-        repo_config = REPOS.get(complete_repo_name)
+        repo_config = self._project_config.get(complete_repo_name)
         self._unapply_mount(complete_repo_name, repo_config)
 
         if not self._is_mounted(complete_repo_name):
