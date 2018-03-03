@@ -3,6 +3,37 @@
 Developer tool kit for Wazo development
 
 
+## Installation
+
+`wdk` depends on lsyncd. It can be installed on a Debian or Ubuntu with the following
+commands
+
+```sh
+sudo apt update
+sudo apt install lsyncd
+```
+
+The recommended way to install `wdk` is to use a virtual environment.
+
+```sh
+mkvirtualenv --python /usr/bin/python3 wdk
+pip install requirements.txt
+pip install .
+sudo ln -s -T ~/.virtualenvs/wdk/bin/wdk /usr/local/bin/wdk
+```
+
+Copying configuration files. The following commands will create a copy of the sample
+configuration file that you can modify to fit your needs and will create a link to the
+version controlled `project.yml` such that changes to file will be automatically applied
+when pulling.
+
+```sh
+mkdir -p ~/.config/wdk
+cp config.yml.sample ~/.config/wdk/config.yml
+ln -s T $(readlink -f project.yml) ~/.config/wdk/project.yml
+```
+
+
 ## Configuration
 
 The default location of the configuration file is `~/.config/wdk/config.yml` you can check
