@@ -144,25 +144,33 @@ class Mounter:
             self.logger.debug(ssh(' '.join(cmd)))
 
     def _mount_python2(self, ssh, repo_name):
-        self.logger.info('python2 install...')
-        path = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', path, ';', 'python2', 'setup.py', 'develop']
+        setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
+        self._wait_for_file(ssh, setup_path)
+
+        repo_dir = os.path.join(self._remote_dir, repo_name)
+        cmd = ['cd', repo_dir, ';', 'python2', 'setup.py', 'develop']
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _mount_python3(self, ssh, repo_name):
-        path = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', path, ';', 'python3', 'setup.py', 'develop']
+        setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
+        self._wait_for_file(ssh, setup_path)
+
+        repo_dir = os.path.join(self._remote_dir, repo_name)
+        cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop']
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _umount_python2(self, ssh, repo_name):
-        path = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', path, ';', 'python2', 'setup.py', 'develop', '--uninstall']
+        repo_dir = os.path.join(self._remote_dir, repo_name)
+        cmd = ['cd', repo_dir, ';', 'python2', 'setup.py', 'develop', '--uninstall']
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _umount_python3(self, ssh, repo_name):
-        path = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', path, ';', 'python3', 'setup.py', 'develop', '--uninstall']
+        repo_dir = os.path.join(self._remote_dir, repo_name)
+        cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop', '--uninstall']
         self.logger.debug(ssh(' '.join(cmd)))
+
+    def _wait_for_file(self, ssh, filename):
+        ssh('while [ -f {} ]; do sleep 0.2; done'.format(filename))
 
     def _start_sync(self, repo_name):
         local_path = os.path.join(self._local_dir, repo_name)
