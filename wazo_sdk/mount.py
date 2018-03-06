@@ -123,6 +123,7 @@ class Mounter:
                 self.logger.debug('%s is already mounted...', dest)
                 continue
             src_path = os.path.join(self._remote_dir, repo_name, source)
+            self._wait_for_file(ssh, src_path)
             cmd = ['mount', '--bind', src_path, dest]
             self.logger.debug(ssh(' '.join(cmd)))
 
