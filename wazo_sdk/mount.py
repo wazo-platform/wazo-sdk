@@ -207,7 +207,7 @@ class Mounter:
     def _find_real_repo_name(self, repo_name):
         for prefix in REPO_PREFIX:
             name = '{}{}'.format(prefix, repo_name)
-            if self._config.get_project(repo_name):
+            if self._config.get_project(name):
                 return name
 
         raise Exception('No such repo {}'.format(repo_name))
