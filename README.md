@@ -17,9 +17,9 @@ The recommended way to install `wdk` is to use a virtual environment.
 
 ```sh
 mkvirtualenv --python /usr/bin/python3 wdk
-pip install requirements.txt
+pip install -r requirements.txt
 pip install .
-sudo ln -s -T ~/.virtualenvs/wdk/bin/wdk /usr/local/bin/wdk
+sudo ln -s ~/.virtualenvs/wdk/bin/wdk /usr/local/bin/wdk
 ```
 
 Copying configuration files. The following commands will create a copy of the sample
@@ -30,7 +30,7 @@ when pulling.
 ```sh
 mkdir -p ~/.config/wdk
 cp config.yml.sample ~/.config/wdk/config.yml
-ln -s T $(readlink -f project.yml) ~/.config/wdk/project.yml
+ln -s $(readlink -f project.yml) ~/.config/wdk/project.yml
 ```
 
 
