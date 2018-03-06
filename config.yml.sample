@@ -1,0 +1,11 @@
+# The Wazo on which you wish to work
+hostname: wazo-dev
+
+# The location of you local copy of the Wazo source code
+local_source: ~/wazo
+
+# The location of the source code that is synchronized on the Wazo server
+remote_source: /usr/src/wazo
+
+# The location of the project description file
+project_file: ~/.config/wdk/project.yml
