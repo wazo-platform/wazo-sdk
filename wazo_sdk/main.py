@@ -27,8 +27,8 @@ class WDK(App):
         parser = super().build_option_parser(*args, **kwargs)
         parser.add_argument('--config', default=_DEFAULT_CONFIG_FILENAME,
                             help='Configuration file name')
-        parser.add_argument('--project-file', help='Project description file', default=None)
-        parser.add_argument('--hostname', help='The remove host when Wazo is installed')
+        parser.add_argument('--project-file', help='Project configuration file', default=None)
+        parser.add_argument('--hostname', help='The remote host when Wazo is installed')
         parser.add_argument('--dev-dir', help='Where the local source code is')
         return parser
 
