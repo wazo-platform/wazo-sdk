@@ -53,28 +53,30 @@ class Mounter:
         if not self._local_dir:
             raise Exception('The local source directory is required to mount directories')
 
-        complete_repo_name = self._find_complete_repo_name(repo_name)
-        if self._is_mounted(complete_repo_name):
-            self.logger.debug('%s is already mounted', complete_repo_name)
-        else:
-            self._start_sync(complete_repo_name)
+        local_repo_name = self._find_local_repo_name(repo_name)
+        real_repo_name = self._find_real_repo_name(repo_name)
 
-        repo_config = self._config.get_project(complete_repo_name)
-        self._apply_mount(complete_repo_name, repo_config)
+        if self._is_mounted(real_repo_name):
+            self.logger.debug('%s is already mounted', real_repo_name)
+        else:
+            self._start_sync(local_repo_name, real_repo_name)
+
+        repo_config = self._config.get_project(real_repo_name)
+        self._apply_mount(real_repo_name, repo_config)
 
     def umount(self, repo_name):
         if not self._local_dir:
             raise Exception('The local source directory is required to mount directories')
 
-        complete_repo_name = self._find_complete_repo_name(repo_name)
+        real_repo_name = self._find_real_repo_name(repo_name)
 
-        repo_config = self._config.get_project(complete_repo_name)
-        self._unapply_mount(complete_repo_name, repo_config)
+        repo_config = self._config.get_project(real_repo_name)
+        self._unapply_mount(real_repo_name, repo_config)
 
-        if not self._is_mounted(complete_repo_name):
-            self.logger.debug('%s is not mounted', complete_repo_name)
+        if not self._is_mounted(real_repo_name):
+            self.logger.debug('%s is not mounted', real_repo_name)
         else:
-            self._stop_sync(complete_repo_name)
+            self._stop_sync(real_repo_name)
 
     def _apply_mount(self, repo_name, config):
         if not config:
@@ -172,9 +174,9 @@ class Mounter:
     def _wait_for_file(self, ssh, filename):
         ssh('while [ ! -f {} ]; do sleep 0.2; done'.format(filename))
 
-    def _start_sync(self, repo_name):
-        local_path = os.path.join(self._local_dir, repo_name)
-        remote_path = os.path.join(self._remote_dir, repo_name)
+    def _start_sync(self, local_repo_name, real_repo_name):
+        local_path = os.path.join(self._local_dir, local_repo_name)
+        remote_path = os.path.join(self._remote_dir, real_repo_name)
 
         lsync_command = [
             'lsyncd',
@@ -193,11 +195,19 @@ class Mounter:
                 continue
             os.kill(pid, signal.SIGTERM)
 
-    def _find_complete_repo_name(self, repo_name):
+    def _find_local_repo_name(self, repo_name):
         for prefix in REPO_PREFIX:
             basename = '{}{}'.format(prefix, repo_name)
             path = os.path.join(self._local_dir, basename)
             if os.path.exists(path):
                 return basename
+
+        raise Exception('No such repo {}'.format(repo_name))
+
+    def _find_real_repo_name(self, repo_name):
+        for prefix in REPO_PREFIX:
+            name = '{}{}'.format(prefix, repo_name)
+            if self._config.get_project(repo_name):
+                return name
 
         raise Exception('No such repo {}'.format(repo_name))
