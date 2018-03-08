@@ -5,6 +5,7 @@ import os
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
+REPO_PREFIX = ['', 'wazo-', 'xivo-']
 
 
 class Config:
@@ -28,8 +29,17 @@ class Config:
     def remote_source(self):
         return self._file_config.get('remote_source')
 
-    def get_project(self, project):
-        return self._project_config.get(project, {})
+    def get_project(self, short_name):
+        name = self.get_project_name(short_name)
+        return self._project_config[name]
+
+    def get_project_name(self, short_name):
+        for prefix in REPO_PREFIX:
+            name = '{}{}'.format(prefix, short_name)
+            if name in self._project_config:
+                return name
+
+        raise Exception('No such project {}'.format(short_name))
 
     def _read_config_file(self):
         filename = os.path.expanduser(self._args.config)

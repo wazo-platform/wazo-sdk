@@ -9,6 +9,7 @@ from cliff.commandmanager import CommandManager
 
 from wazo_sdk.config import Config
 from wazo_sdk.mount import Mounter
+from wazo_sdk.service import ServiceManager
 
 _DEFAULT_CONFIG_FILENAME = os.path.expanduser('~/.config/wdk/config.yml')
 _DEFAULT_CONFIG_FILENAME = os.getenv('WDK_CONFIG_FILE', _DEFAULT_CONFIG_FILENAME)
@@ -34,10 +35,12 @@ class WDK(App):
 
     def initialize_app(self, argv):
         config = Config(self.options)
+        self._service_manager = ServiceManager(self.LOG, config)
         self._mounter = Mounter(self.LOG, config)
 
     def prepare_to_run_command(self, cmd):
         cmd.mounter = self._mounter
+        cmd.service = self._service_manager
 
 
 def main(argv=sys.argv[1:]):

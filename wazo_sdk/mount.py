@@ -54,7 +54,7 @@ class Mounter:
             raise Exception('The local source directory is required to mount directories')
 
         local_repo_name = self._find_local_repo_name(repo_name)
-        real_repo_name = self._find_real_repo_name(repo_name)
+        real_repo_name = self._config.get_project_name(repo_name)
 
         if self._is_mounted(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
@@ -68,7 +68,7 @@ class Mounter:
         if not self._local_dir:
             raise Exception('The local source directory is required to mount directories')
 
-        real_repo_name = self._find_real_repo_name(repo_name)
+        real_repo_name = self._config.get_project_name(repo_name)
 
         repo_config = self._config.get_project(real_repo_name)
         self._unapply_mount(real_repo_name, repo_config)
@@ -202,13 +202,5 @@ class Mounter:
             path = os.path.join(self._local_dir, basename)
             if os.path.exists(path):
                 return basename
-
-        raise Exception('No such repo {}'.format(repo_name))
-
-    def _find_real_repo_name(self, repo_name):
-        for prefix in REPO_PREFIX:
-            name = '{}{}'.format(prefix, repo_name)
-            if self._config.get_project(name):
-                return name
 
         raise Exception('No such repo {}'.format(repo_name))
