@@ -173,7 +173,7 @@ class Mounter:
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _wait_for_file(self, ssh, filename):
-        ssh('while [ ! -f {} ]; do sleep 0.2; done'.format(filename))
+        ssh('while [ ! -e {} ]; do sleep 0.2; done'.format(filename))
 
     def _start_sync(self, local_repo_name, real_repo_name):
         local_path = os.path.join(self._local_dir, local_repo_name)
