@@ -7,6 +7,10 @@ wazo-auth:
     - /usr/local/bin/wazo-auth
     - /usr/local/bin/wazo-auth-init-db
     - /usr/local/bin/wazo-auth-bootstrap
+wazo-auth-cli:
+  python3: true
+  clean:
+    - /usr/local/bin/wazo-auth-cli
 xivo-confd:
   python2: true
   bind:
