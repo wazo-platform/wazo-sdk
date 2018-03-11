@@ -20,3 +20,6 @@ xivo-confd:
 xivo-dao:
   python2: true
   python3: true
+xivo-web-interface:
+  bind:
+    src: /usr/share/xivo-web-interface
