@@ -30,8 +30,7 @@ class Mounter:
         self._remote_dir = config.remote_source
 
     def list_(self):
-        for pid, repo in self._list_sync():
-            self.logger.info(repo)
+        return [repo for _, repo in self._list_sync()]
 
     def _list_sync(self):
         for pid, cmd in _list_processes():

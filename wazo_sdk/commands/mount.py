@@ -18,7 +18,9 @@ class Mount(Command):
             self.mounter.mount(repo)
 
         if parsed_args.list:
-            self.mounter.list_()
+            mounted_repos = self.mounter.list_()
+            for repo in mounted_repos:
+                self.app.LOG.info(repo)
 
 
 class Umount(Command):
@@ -29,5 +31,6 @@ class Umount(Command):
         return parser
 
     def take_action(self, parsed_args):
-        for repo in parsed_args.repos:
+        repos = parsed_args.repos or self.mounter.list_()
+        for repo in repos:
             self.mounter.umount(repo)
