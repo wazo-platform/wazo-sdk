@@ -26,6 +26,12 @@ xivo-dao:
 xivo-manage-db:
   bind:
     alembic: /usr/share/xivo-manage-db/alembic
+xivo-upgrade:
+  bind:
+    post-start.d: /usr/share/xivo-upgrade/post-start.d
+    post-stop.d: /usr/share/xivo-upgrade/post-stop.d
+    pre-start.d: /usr/share/xivo-upgrade/pre-start.d
+    pre-stop.d: /usr/share/xivo-upgrade/pre-stop.d
 xivo-web-interface:
   bind:
     src: /usr/share/xivo-web-interface
