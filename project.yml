@@ -23,6 +23,9 @@ xivo-confd:
 xivo-dao:
   python2: true
   python3: true
+xivo-lib-python:
+  python2: true
+  python3: true
 xivo-manage-db:
   bind:
     alembic: /usr/share/xivo-manage-db/alembic
