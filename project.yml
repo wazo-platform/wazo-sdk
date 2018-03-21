@@ -20,6 +20,9 @@ xivo-confd:
     etc/xivo-confd/config.yml: /etc/xivo-confd/config.yml
   clean:
     - /usr/local/bin/xivo-confd
+xivo-confd-client:
+  python2: true
+  python3: true
 xivo-dao:
   python2: true
   python3: true
