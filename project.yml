@@ -26,6 +26,13 @@ xivo-confd-client:
 xivo-dao:
   python2: true
   python3: true
+xivo-dird:
+  python2: true
+  bind:
+    etc/xivo-dird/config.yml: /etc/xivo-dird/config.yml
+    alembic: /usr/share/xivo-dird/alembic
+  clean:
+    - /usr/local/bin/xivo-dird
 xivo-lib-python:
   python2: true
   python3: true
