@@ -34,6 +34,15 @@ ln -s $(readlink -f project.yml) ~/.config/wdk/project.yml
 ```
 
 
+### On the target machine (Wazo)
+
+```sh
+apt update
+apt install rsync
+mkdir /usr/src/wazo  # or whatever your <local_source>
+```
+
+
 ## Configuration
 
 The default location of the configuration file is `~/.config/wdk/config.yml` you can check
