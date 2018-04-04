@@ -100,3 +100,25 @@ wdk umount [<project1>, <project2>, ...<projectn>]
 ```sh
 wdk mount --list
 ```
+
+## Restarting a daemon
+
+```sh
+wdk restart [<project1>, <project2>]
+```
+
+## Troubleshooting
+
+Increase verbosity of errors:
+
+```sh
+wdk -vvv <command>
+```
+
+### Mount command is stuck
+
+Copy the lsyncd command (got from `wdk -vvv ...`) and run it with the `-nodaemon` argument, e.g.:
+
+```sh
+lsyncd -nodaemon -delay 1 -rsyncssh /home/user/git/origin/xivo-confd wazo.example.com /usr/src/wazo/xivo-confd
+```
