@@ -11,6 +11,9 @@ wazo-auth-cli:
   python3: true
   clean:
     - /usr/local/bin/wazo-auth-cli
+xivo-auth-client:
+  python3: true
+  python2: true
 xivo-bus:
   python2: true
   python3: true
