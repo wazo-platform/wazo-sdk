@@ -109,7 +109,14 @@ wdk restart [<project1>, <project2>]
 
 ## Troubleshooting
 
-Increase verbosity of errors:
+### Common causes
+
+Make sure:
+
+* you have created your `<remote_source>` (`/usr/src/wazo` by default)
+* you have installed rsync on your target marchine
+
+### Increase verbosity of errors
 
 ```sh
 wdk -vvv <command>
