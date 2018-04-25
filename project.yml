@@ -32,6 +32,8 @@ xivo-confd:
 xivo-confd-client:
   python2: true
   python3: true
+xivo-confgend:
+  python2: true
 xivo-dao:
   python2: true
   python3: true
