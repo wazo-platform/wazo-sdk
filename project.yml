@@ -14,6 +14,12 @@ wazo-auth-cli:
 xivo-auth-client:
   python3: true
   python2: true
+xivo-amid:
+  python2: true
+  bind:
+    etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
+  clean:
+    - /usr/local/bin/xivo-amid
 xivo-bus:
   python2: true
   python3: true
