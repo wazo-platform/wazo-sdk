@@ -51,6 +51,9 @@ xivo-dird:
 xivo-lib-python:
   python2: true
   python3: true
+xivo-lib-rest-client:
+  python2: true
+  python3: true
 xivo-manage-db:
   bind:
     alembic: /usr/share/xivo-manage-db/alembic
