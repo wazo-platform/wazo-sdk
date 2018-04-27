@@ -54,6 +54,8 @@ xivo-lib-python:
 xivo-manage-db:
   bind:
     alembic: /usr/share/xivo-manage-db/alembic
+xivo-provisioning:
+  python2: true
 xivo-upgrade:
   bind:
     post-start.d: /usr/share/xivo-upgrade/post-start.d
