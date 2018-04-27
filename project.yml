@@ -11,6 +11,10 @@ wazo-auth-cli:
   python3: true
   clean:
     - /usr/local/bin/wazo-auth-cli
+wazo-call-logd:
+  python3: true
+  clean:
+    - /usr/local/bin/wazo-call-logd
 xivo-auth-client:
   python3: true
   python2: true
