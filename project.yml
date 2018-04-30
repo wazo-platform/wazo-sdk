@@ -27,6 +27,12 @@ xivo-amid:
 xivo-bus:
   python2: true
   python3: true
+wazo-call-logd:
+  python3: true
+  bind:
+    etc/wazo-call-logd/config.yml: /etc/wazo-call-logd/config.yml
+  clean:
+    - /usr/local/bin/wazo-call-logd
 xivo-confd:
   python2: true
   bind:
