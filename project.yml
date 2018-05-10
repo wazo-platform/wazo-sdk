@@ -58,6 +58,12 @@ xivo-confd-client:
   python3: true
 xivo-confgend:
   python2: true
+xivo-ctid-ng:
+  python2: true
+  bind:
+    etc/xivo-ctid-ng/config.yml: /etc/xivo-ctid-ng/config.yml
+  clean:
+    - /usr/local/bin/xivo-ctid-ng
 xivo-dao:
   python2: true
   python3: true
