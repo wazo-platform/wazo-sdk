@@ -187,8 +187,7 @@ class Mounter:
         config = LSYNC_CONFIG_TEMPLATE.render(
             source=local_path, host=self._hostname, destination=remote_path)
 
-        # make /var/cache/wdk configurable
-        with tempfile.NamedTemporaryFile(mode='w', dir='/var/cache/wdk', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', dir=self._config.cache_dir, delete=False) as f:
             config_filename = f.name
             f.write(config)
 
