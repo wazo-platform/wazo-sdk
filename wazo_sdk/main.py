@@ -4,6 +4,7 @@
 import json
 import os
 import sys
+import pathlib
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
@@ -37,6 +38,8 @@ class WDK(App):
     def initialize_app(self, argv):
         self.config = Config(self.options)
 
+        self._create_cache_dir(self.config.cache_dir)
+
         try:
             with open(self.config.state_file_path, 'r') as f:
                 self.state = json.load(f) or {}
@@ -59,6 +62,9 @@ class WDK(App):
 
         with open(self.config.state_file_path, 'w') as f:
             json.dump(self.state, f)
+
+    def _create_cache_dir(self, path):
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
 
 def main(argv=sys.argv[1:]):

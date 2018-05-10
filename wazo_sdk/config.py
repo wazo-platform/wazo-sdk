@@ -5,7 +5,7 @@ import os
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
-_DEFAULT_CACHE_DIR = '/var/cache/wdk'
+_DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
 
@@ -19,7 +19,7 @@ class Config:
 
     @property
     def cache_dir(self):
-        return self._file_config.get('cache_dir', _DEFAULT_CACHE_DIR)
+        return os.path.expanduser(self._file_config.get('cache_dir', _DEFAULT_CACHE_DIR))
 
     @property
     def hostname(self):
@@ -37,8 +37,7 @@ class Config:
 
     @property
     def state_file_path(self):
-        default_state_file = os.path.join(self.cache_dir, _DEFAULT_STATE_FILENAME)
-        return self._file_config.get('state_file', default_state_file)
+        return os.path.join(self.cache_dir, _DEFAULT_STATE_FILENAME)
 
     def get_project(self, short_name):
         name = self.get_project_name(short_name)

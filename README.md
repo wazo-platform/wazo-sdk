@@ -11,7 +11,6 @@ commands
 ```sh
 sudo apt update
 sudo apt install lsyncd
-sudo install -d /var/cache/wdk -o $USER
 ```
 
 The recommended way to install `wdk` is to use a virtual environment.
@@ -135,7 +134,7 @@ lsyncd -nodaemon -delay 1 -rsyncssh /home/user/git/origin/xivo-confd wazo.exampl
 
 The state file contains information about the current state of wdk.
 
-The file is located in `/var/cache/wdk/state`
+The file is located in `~/.local/cache/wdk/state`
 
 ```json
 {
