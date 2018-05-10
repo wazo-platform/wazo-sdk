@@ -5,6 +5,7 @@ import os
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
+_DEFAULT_STATE_FILE = '/var/cache/wdk/state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
 
 
@@ -28,6 +29,10 @@ class Config:
     @property
     def remote_source(self):
         return self._file_config.get('remote_source')
+
+    @property
+    def state_file_path(self):
+        return self._file_config.get('state_file', _DEFAULT_STATE_FILE)
 
     def get_project(self, short_name):
         name = self.get_project_name(short_name)

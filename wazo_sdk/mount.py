@@ -6,8 +6,21 @@ import os
 import sh
 import signal
 import subprocess
+import tempfile
+from jinja2 import Template
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
+LSYNC_CONFIG_TEMPLATE = Template('''\
+sync {
+    default.rsync,
+    delay = 1,
+    source = "{{ source }}",
+    target = "{{ host }}:{{ destination }}",
+    rsync = {
+        cvs_exclude=true
+    }
+}
+''')
 
 
 def _list_processes():
@@ -22,28 +35,21 @@ def _list_processes():
 
 class Mounter:
 
-    def __init__(self, logger, config):
+    def __init__(self, logger, config, state):
         self.logger = logger
         self._config = config
         self._hostname = config.hostname
         self._local_dir = config.local_source
         self._remote_dir = config.remote_source
+        self._state = state
 
     def list_(self):
-        return [repo for _, repo in self._list_sync()]
-
-    def _list_sync(self):
-        for pid, cmd in _list_processes():
-            if 'lsyncd' not in cmd:
-                continue
-
-            yield pid, cmd.split('/')[-1]
+        mounts = self._get_mounts()
+        return mounts.keys()
 
     def _is_mounted(self, repo_name):
-        for pid, repo in self._list_sync():
-            if repo == repo_name:
-                return True
-        return False
+        mounts = self._get_mounts()
+        return repo_name in mounts
 
     def mount(self, repo_name):
         if not self._hostname:
@@ -178,22 +184,86 @@ class Mounter:
         local_path = os.path.join(self._local_dir, local_repo_name)
         remote_path = os.path.join(self._remote_dir, real_repo_name)
 
-        lsync_command = [
-            'lsyncd',
-            '-delay', '1',
-            '-rsyncssh', local_path, self._hostname, remote_path,
-        ]
+        config = LSYNC_CONFIG_TEMPLATE.render(
+            source=local_path, host=self._hostname, destination=remote_path)
+
+        # make /var/cache/wdk configurable
+        with tempfile.NamedTemporaryFile(mode='w', dir='/var/cache/wdk', delete=False) as f:
+            config_filename = f.name
+            f.write(config)
+
+        pid_filename = '{}.pid'.format(config_filename)
+        lsync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
 
         self.logger.debug('%s', ' '.join(lsync_command))
-        ret = subprocess.call(lsync_command)
-        if ret:
-            self.logger.info('%s failed %s', ' '.join(lsync_command), ret)
+        proc = subprocess.Popen(lsync_command)
+        try:
+            outs, errs = proc.communicate(timeout=1)
+            if errs:
+                self.logger.info('%s failed %s', ' '.join(lsync_command), errs)
+                return
+        except subprocess.TimeoutExpired:
+            self.logger.info('%s failed %s', ' '.join(lsync_command), 'timeout')
+            return
+
+        mount = {
+            'project': real_repo_name,
+            'lsync_config': config_filename,
+            'lsync_pidfile': pid_filename,
+        }
+        mounts = self._get_mounts()
+        mounts[real_repo_name] = mount
 
     def _stop_sync(self, repo_name):
-        for pid, repo in self._list_sync():
-            if repo != repo_name:
-                continue
-            os.kill(pid, signal.SIGTERM)
+        mount = self._get_mount(repo_name)
+        if not mount:
+            self.logger.error('failed to find a matching mount to stop')
+            return
+
+        pid_filename = mount['lsync_pidfile']
+        config_filename = mount['lsync_config']
+        pid = None
+
+        try:
+            with open(pid_filename, 'r') as f:
+                pid = int(f.read())
+        except OSError:
+            self.logger.error('failed to find pidfile')
+
+        if pid:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError:
+                self.logger.error('failed to kill %s', pid)
+
+        try:
+            os.unlink(config_filename)
+        except OSError:
+            self.logger.error('failed to find config file')
+
+        self._delete_mount_from_state(repo_name)
+
+    def _get_mount(self, repo_name):
+        mounts = self._get_mounts()
+        return mounts.get(repo_name)
+
+    def _get_mounts(self):
+        if 'hosts' not in self._state:
+            self._state['hosts'] = {}
+        if self._hostname not in self._state['hosts']:
+            self._state['hosts'][self._hostname] = {}
+        if 'mounts' not in self._state['hosts'][self._hostname]:
+            self._state['hosts'][self._hostname]['mounts'] = {}
+
+        return self._state['hosts'][self._hostname]['mounts']
+
+    def _delete_mount_from_state(self, repo_name):
+        mounts = self._get_mounts()
+        if not mounts:
+            return
+
+        if repo_name in mounts:
+            del mounts[repo_name]
 
     def _find_local_repo_name(self, repo_name):
         for prefix in REPO_PREFIX:
