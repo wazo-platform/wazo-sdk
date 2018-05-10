@@ -11,6 +11,7 @@ commands
 ```sh
 sudo apt update
 sudo apt install lsyncd
+sudo install -d /var/cache/wdk -o $USER
 ```
 
 The recommended way to install `wdk` is to use a virtual environment.
@@ -128,4 +129,25 @@ Copy the lsyncd command (got from `wdk -vvv ...`) and run it with the `-nodaemon
 
 ```sh
 lsyncd -nodaemon -delay 1 -rsyncssh /home/user/git/origin/xivo-confd wazo.example.com /usr/src/wazo/xivo-confd
+```
+
+## The state file
+
+The state file contains information about the current state of wdk.
+
+The file is located in `/var/cache/wdk/state`
+
+```json
+{
+    "hosts": {
+        "<hostname>": {
+            "mounts": {
+                <project_name>: {
+                    "project": "<project name>",
+                    "lsync_config": "</path/to/the/lsync/config/file>",
+                }
+            }
+        }
+    }
+}
 ```

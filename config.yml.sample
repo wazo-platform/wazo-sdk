@@ -9,3 +9,6 @@ remote_source: /usr/src/wazo
 
 # The location of the project description file
 project_file: ~/.config/wdk/project.yml
+
+cache_dir: /var/cache/wdk
+state_file: /var/cache/wdk/state

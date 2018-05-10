@@ -1,6 +1,7 @@
 # Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
+import json
 import os
 import sys
 
@@ -34,13 +35,30 @@ class WDK(App):
         return parser
 
     def initialize_app(self, argv):
-        config = Config(self.options)
-        self._service_manager = ServiceManager(self.LOG, config)
-        self._mounter = Mounter(self.LOG, config)
+        self.config = Config(self.options)
+
+        try:
+            with open(self.config.state_file_path, 'r') as f:
+                self.state = json.load(f) or {}
+        except IOError:
+            self.state = {}
+
+        if 'hosts' not in self.state:
+            self.state['hosts'] = {}
+
+        self._service_manager = ServiceManager(self.LOG, self.config)
+        self._mounter = Mounter(self.LOG, self.config, self.state)
 
     def prepare_to_run_command(self, cmd):
         cmd.mounter = self._mounter
         cmd.service = self._service_manager
+
+    def clean_up(self, cmd, result, err):
+        if err:
+            return
+
+        with open(self.config.state_file_path, 'w') as f:
+            json.dump(self.state, f)
 
 
 def main(argv=sys.argv[1:]):

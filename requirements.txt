@@ -1,3 +1,4 @@
 cliff
 psutil
 sh
+jinja2

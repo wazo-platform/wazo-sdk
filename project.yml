@@ -15,6 +15,13 @@ wazo-call-logd:
   python3: true
   clean:
     - /usr/local/bin/wazo-call-logd
+wazo-dird:
+  python2: true
+  bind:
+    etc/wazo-dird/config.yml: /etc/wazo-dird/config.yml
+    alembic: /usr/share/wazo-dird/alembic
+  clean:
+    - /usr/local/bin/wazo-dird
 xivo-auth-client:
   python3: true
   python2: true
