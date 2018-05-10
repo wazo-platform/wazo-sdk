@@ -44,10 +44,37 @@ class Mounter:
         self._state = state
 
     def list_(self):
-        return list(self._state.get_mounts(self._hostname).keys())
+        mounts = self._state.get_mounts(self._hostname)
+        for mount in list(mounts.values()):
+            yield mount['project'], self._is_lsync_running(mount)
+
+    def _is_lsync_running(self, mount):
+        pid_filename = mount['lsync_pidfile']
+        try:
+            with open(pid_filename, 'r') as f:
+                pid = int(f.read())
+        except OSError:
+            return False
+
+        if pid not in psutil.pids():
+            return False
+
+        try:
+            with open(os.path.join('/proc', str(pid), 'status'), 'r') as f:
+                _, cmd = f.readline().strip().rsplit('\t', 1)
+                return cmd == 'lsyncd'
+        except OSError:
+            return False
 
     def _is_mounted(self, repo_name):
         return self._state.is_mounted(self._hostname, repo_name)
+
+    def _is_mounted_and_running(self, repo_name):
+        mount = self._state.get_mount(self._hostname, repo_name)
+        if not mount:
+            return False
+
+        return self._is_lsync_running(mount)
 
     def mount(self, repo_name):
         if not self._hostname:
@@ -59,7 +86,7 @@ class Mounter:
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
 
-        if self._is_mounted(real_repo_name):
+        if self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
             self._start_sync(local_repo_name, real_repo_name)

@@ -22,8 +22,9 @@ class Mount(Command):
 
         if parsed_args.list:
             mounted_repos = self.mounter.list_()
-            for repo in mounted_repos:
-                self.app.LOG.info(repo)
+            for repo, running in mounted_repos:
+                state = 'UP' if running else 'DOWN'
+                self.app.LOG.info('%s %s', repo, state)
 
 
 class Umount(Command):
@@ -35,5 +36,5 @@ class Umount(Command):
 
     def take_action(self, parsed_args):
         repos = parsed_args.repos or self.mounter.list_()
-        for repo in repos:
+        for repo, running in repos:
             self.mounter.umount(repo)
