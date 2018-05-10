@@ -44,12 +44,10 @@ class Mounter:
         self._state = state
 
     def list_(self):
-        mounts = self._get_mounts()
-        return mounts.keys()
+        return list(self._state.get_mounts(self._hostname).keys())
 
     def _is_mounted(self, repo_name):
-        mounts = self._get_mounts()
-        return repo_name in mounts
+        return self._state.is_mounted(self._hostname, repo_name)
 
     def mount(self, repo_name):
         if not self._hostname:
@@ -205,16 +203,10 @@ class Mounter:
             self.logger.info('%s failed %s', ' '.join(lsync_command), 'timeout')
             return
 
-        mount = {
-            'project': real_repo_name,
-            'lsync_config': config_filename,
-            'lsync_pidfile': pid_filename,
-        }
-        mounts = self._get_mounts()
-        mounts[real_repo_name] = mount
+        self._state.add_mount(self._hostname, real_repo_name, config_filename, pid_filename)
 
     def _stop_sync(self, repo_name):
-        mount = self._get_mount(repo_name)
+        mount = self._state.get_mount(self._hostname, repo_name)
         if not mount:
             self.logger.error('failed to find a matching mount to stop')
             return
@@ -240,29 +232,7 @@ class Mounter:
         except OSError:
             self.logger.error('failed to find config file')
 
-        self._delete_mount_from_state(repo_name)
-
-    def _get_mount(self, repo_name):
-        mounts = self._get_mounts()
-        return mounts.get(repo_name)
-
-    def _get_mounts(self):
-        if 'hosts' not in self._state:
-            self._state['hosts'] = {}
-        if self._hostname not in self._state['hosts']:
-            self._state['hosts'][self._hostname] = {}
-        if 'mounts' not in self._state['hosts'][self._hostname]:
-            self._state['hosts'][self._hostname]['mounts'] = {}
-
-        return self._state['hosts'][self._hostname]['mounts']
-
-    def _delete_mount_from_state(self, repo_name):
-        mounts = self._get_mounts()
-        if not mounts:
-            return
-
-        if repo_name in mounts:
-            del mounts[repo_name]
+        self._state.remove_mount(self._hostname, repo_name)
 
     def _find_local_repo_name(self, repo_name):
         for prefix in REPO_PREFIX:

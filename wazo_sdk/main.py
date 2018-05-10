@@ -12,6 +12,7 @@ from cliff.commandmanager import CommandManager
 from wazo_sdk.config import Config
 from wazo_sdk.mount import Mounter
 from wazo_sdk.service import ServiceManager
+from wazo_sdk.state import State
 
 _DEFAULT_CONFIG_FILENAME = os.path.expanduser('~/.config/wdk/config.yml')
 _DEFAULT_CONFIG_FILENAME = os.getenv('WDK_CONFIG_FILE', _DEFAULT_CONFIG_FILENAME)
@@ -42,12 +43,9 @@ class WDK(App):
 
         try:
             with open(self.config.state_file_path, 'r') as f:
-                self.state = json.load(f) or {}
+                self.state = State.from_file(f)
         except IOError:
             self.state = {}
-
-        if 'hosts' not in self.state:
-            self.state['hosts'] = {}
 
         self._service_manager = ServiceManager(self.LOG, self.config)
         self._mounter = Mounter(self.LOG, self.config, self.state)
@@ -61,7 +59,7 @@ class WDK(App):
             return
 
         with open(self.config.state_file_path, 'w') as f:
-            json.dump(self.state, f)
+            self.state.to_file(f)
 
     def _create_cache_dir(self, path):
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
