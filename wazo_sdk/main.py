@@ -61,8 +61,29 @@ class WDK(App):
         with open(self.config.state_file_path, 'w') as f:
             self.state.to_file(f)
 
+        self._remove_stale_config_files()
+
     def _create_cache_dir(self, path):
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+
+    def _remove_stale_config_files(self):
+        files = os.listdir(self.config.cache_dir)
+        pid_files = set([f for f in files if f.endswith('.pid')])
+        normal_files = set(files) - pid_files
+        for f in normal_files:
+            matching_pid = '{}.pid'.format(f)
+            if matching_pid in pid_files:
+                continue
+
+            path = os.path.join(self.config.cache_dir, f)
+            if path == self.config.state_file_path:
+                continue
+
+            self.LOG.debug('remove stale config file: %s', path)
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
 
 
 def main(argv=sys.argv[1:]):

@@ -239,7 +239,6 @@ class Mounter:
             return
 
         pid_filename = mount['lsync_pidfile']
-        config_filename = mount['lsync_config']
         pid = None
 
         try:
@@ -253,11 +252,6 @@ class Mounter:
                 os.kill(pid, signal.SIGTERM)
             except OSError:
                 self.logger.error('failed to kill %s', pid)
-
-        try:
-            os.unlink(config_filename)
-        except OSError:
-            self.logger.error('failed to find config file')
 
         self._state.remove_mount(self._hostname, repo_name)
 
