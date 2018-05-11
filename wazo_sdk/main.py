@@ -45,7 +45,7 @@ class WDK(App):
             with open(self.config.state_file_path, 'r') as f:
                 self.state = State.from_file(f)
         except IOError:
-            self.state = {}
+            self.state = State()
 
         self._service_manager = ServiceManager(self.LOG, self.config)
         self._mounter = Mounter(self.LOG, self.config, self.state)

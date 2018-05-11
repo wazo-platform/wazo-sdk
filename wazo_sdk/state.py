@@ -6,8 +6,8 @@ import json
 
 class State:
 
-    def __init__(self, data):
-        self._data = data
+    def __init__(self, data=None):
+        self._data = data or {'hosts': {}}
 
     def add_mount(self, host, repo, config, pid):
         mount = {
@@ -51,6 +51,8 @@ class State:
     def _nested_get(self, *keys):
         data = self._data
         for key in keys:
-            data = data.get(key, {})
+            if key not in data:
+                data[key] = {}
+            data = data[key]
 
         return data
