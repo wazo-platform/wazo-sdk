@@ -19,6 +19,7 @@ setup(
             '{}=wazo_sdk.main:main'.format(NAME),
         ],
         'wazo_sdk.commands': [
+            'info = wazo_sdk.commands.info:Info',
             'mount = wazo_sdk.commands.mount:Mount',
             'umount = wazo_sdk.commands.mount:Umount',
             'restart = wazo_sdk.commands.restart:Restart',

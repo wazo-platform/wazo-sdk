@@ -39,6 +39,15 @@ class Config:
     def state_file_path(self):
         return os.path.join(self.cache_dir, _DEFAULT_STATE_FILENAME)
 
+    @property
+    def project_file(self):
+        return os.path.expanduser(
+            self._args.project_file
+            or os.getenv('WDK_PROJECT_FILE')
+            or self._file_config.get('project_file')
+            or _DEFAULT_PROJECT_FILENAME
+        )
+
     def get_project(self, short_name):
         name = self.get_project_name(short_name)
         return self._project_config[name]
@@ -56,13 +65,7 @@ class Config:
         return self._read_yml_file(filename)
 
     def _read_project_file(self):
-        filename = os.path.expanduser(
-            self._args.project_file
-            or os.getenv('WDK_PROJECT_FILE')
-            or self._file_config.get('project_file')
-            or _DEFAULT_PROJECT_FILENAME
-        )
-        return self._read_yml_file(filename)
+        return self._read_yml_file(self.project_file)
 
     def _read_yml_file(self, filename):
         try:
