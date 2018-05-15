@@ -35,6 +35,6 @@ class Umount(Command):
         return parser
 
     def take_action(self, parsed_args):
-        repos = parsed_args.repos or self.mounter.list_()
-        for repo, running in repos:
+        repos = parsed_args.repos or [repo for repo, _ in self.mounter.list_()]
+        for repo in repos:
             self.mounter.umount(repo)
