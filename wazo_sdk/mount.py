@@ -16,9 +16,7 @@ sync {
     delay = 1,
     source = "{{ source }}",
     target = "{{ host }}:{{ destination }}",
-    rsync = {
-        cvs_exclude=true
-    }
+    exclude = {'.git'}
 }
 ''')
 
