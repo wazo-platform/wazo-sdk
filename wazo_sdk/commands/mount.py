@@ -1,7 +1,6 @@
 # Copyright 2018 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-
 from cliff.command import Command
 
 
@@ -32,9 +31,12 @@ class Umount(Command):
     def get_parser(self, *args, **kwargs):
         parser = super().get_parser(*args, **kwargs)
         parser.add_argument('repos', nargs='*', default=[], help='a list repos to unmount')
+        parser.add_argument('--restart', '-r',  action='store_true', help='restart unmounted repositories')
         return parser
 
     def take_action(self, parsed_args):
         repos = parsed_args.repos or [repo for repo, _ in self.mounter.list_()]
         for repo in repos:
             self.mounter.umount(repo)
+            if parsed_args.restart:
+                self.service.restart(repo)
