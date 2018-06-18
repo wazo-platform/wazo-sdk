@@ -130,6 +130,12 @@ Copy the lsyncd command (got from `wdk -vvv ...`) and run it with the `-nodaemon
 lsyncd -nodaemon -delay 1 -rsyncssh /home/user/git/origin/xivo-confd wazo.example.com /usr/src/wazo/xivo-confd
 ```
 
+### Increasing the amount of inotify watchers
+
+* `echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`
+
+For more information: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
+
 ## The state file
 
 The state file contains information about the current state of wdk.
@@ -150,9 +156,3 @@ The file is located in `~/.local/cache/wdk/state`
     }
 }
 ```
-
-### Increasing the amount of inotify watchers
-
-* `echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`
-
-For more information: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
