@@ -58,6 +58,8 @@ xivo-confd-client:
   python3: true
 xivo-confgend:
   python2: true
+  bind:
+    etc/xivo-confgend/config.yml: /etc/xivo-confgend/config.yml
 xivo-ctid-ng:
   python2: true
   bind:
@@ -84,6 +86,13 @@ xivo-upgrade:
     post-stop.d: /usr/share/xivo-upgrade/post-stop.d
     pre-start.d: /usr/share/xivo-upgrade/pre-start.d
     pre-stop.d: /usr/share/xivo-upgrade/pre-stop.d
+xivo-agid:
+  python2: true
+  bind:
+    etc/xivo-agid/config.yml: /etc/xivo-agid/config.yml
+xivo-config:
+  bind:
+    dialplan: /usr/share/xivo-config/dialplan
 xivo-web-interface:
   bind:
     src: /usr/share/xivo-web-interface
