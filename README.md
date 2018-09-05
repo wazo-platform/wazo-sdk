@@ -10,12 +10,13 @@ commands
 
 ```sh
 sudo apt update
-sudo apt install lsyncd
+sudo apt install lsyncd virtualenvwrapper python3-dev
 ```
 
 The recommended way to install `wdk` is to use a virtual environment.
 
 ```sh
+source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 mkvirtualenv --python /usr/bin/python3 wdk
 pip install -r requirements.txt
 pip install .
