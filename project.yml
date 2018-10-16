@@ -1,3 +1,6 @@
+ari-py:
+  python2: true
+  python3: true
 wazo-auth:
   python2: true
   bind:
@@ -22,6 +25,8 @@ wazo-dird:
     alembic: /usr/share/wazo-dird/alembic
   clean:
     - /usr/local/bin/wazo-dird
+wazo-res-amqp:
+  clean: []
 xivo-auth-client:
   python3: true
   python2: true
