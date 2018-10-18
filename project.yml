@@ -39,19 +39,6 @@ xivo-amid:
 xivo-bus:
   python2: true
   python3: true
-wazo-dird:
-  python2: true
-  bind:
-    etc/wazo-dird/config.yml: /etc/wazo-dird/config.yml
-    alembic: /usr/share/wazo-dird/alembic
-  clean:
-    - /usr/local/bin/wazo-dird
-wazo-call-logd:
-  python3: true
-  bind:
-    etc/wazo-call-logd/config.yml: /etc/wazo-call-logd/config.yml
-  clean:
-    - /usr/local/bin/wazo-call-logd
 xivo-confd:
   python2: true
   bind:
