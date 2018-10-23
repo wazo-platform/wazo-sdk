@@ -1,6 +1,8 @@
 ari-py:
   python2: true
   python3: true
+wazo-asterisk-config:
+  bind: []
 wazo-auth:
   python2: true
   bind:
