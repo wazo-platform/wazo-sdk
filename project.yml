@@ -86,6 +86,7 @@ xivo-agid:
   python2: true
   bind:
     etc/xivo-agid/config.yml: /etc/xivo-agid/config.yml
+    bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
