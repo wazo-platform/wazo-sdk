@@ -4,7 +4,7 @@ ari-py:
 wazo-asterisk-config:
   bind: []
 wazo-auth:
-  python2: true
+  python3: true
   bind:
     alembic: /usr/share/wazo-auth/alembic
     etc/wazo-auth/config.yml: /etc/wazo-auth/config.yml
