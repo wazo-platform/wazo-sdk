@@ -68,6 +68,8 @@ xivo-dao:
 xivo-lib-python:
   python2: true
   python3: true
+xivo-libsccp:
+  bind: []
 xivo-lib-rest-client:
   python2: true
   python3: true
