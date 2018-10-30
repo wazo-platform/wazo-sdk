@@ -2,7 +2,8 @@ ari-py:
   python2: true
   python3: true
 wazo-asterisk-config:
-  bind: []
+  bind:
+    etc/asterisk/modules.conf: /etc/asterisk/modules.conf
 wazo-auth:
   python3: true
   bind:
