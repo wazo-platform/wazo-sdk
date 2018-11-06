@@ -30,6 +30,14 @@ wazo-dird:
     - /usr/local/bin/wazo-dird
 wazo-res-amqp:
   clean: []
+wazo-setupd:
+  python3: true
+  bind:
+    etc/wazo-setupd/config.yml: /etc/wazo-setupd/config.yml
+  clean:
+    - /usr/local/bin/wazo-setupd
+wazo-setupd-client:
+  python3: true
 xivo-auth-client:
   python3: true
   python2: true
