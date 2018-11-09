@@ -65,6 +65,10 @@ xivo-confgend:
   python2: true
   bind:
     etc/xivo-confgend/config.yml: /etc/xivo-confgend/config.yml
+xivo-ctid:
+  python2: true
+  bind:
+    etc/xivo-ctid/config.yml: /etc/xivo-ctid/config.yml
 xivo-ctid-ng:
   python2: true
   bind:
