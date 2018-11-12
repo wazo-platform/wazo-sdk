@@ -70,7 +70,7 @@ xivo-ctid:
   bind:
     etc/xivo-ctid/config.yml: /etc/xivo-ctid/config.yml
 xivo-ctid-ng:
-  python2: true
+  python3: true
   bind:
     etc/xivo-ctid-ng/config.yml: /etc/xivo-ctid-ng/config.yml
   clean:
