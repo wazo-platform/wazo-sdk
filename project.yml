@@ -17,6 +17,12 @@ wazo-auth-cli:
   python3: true
   clean:
     - /usr/local/bin/wazo-auth-cli
+wazo-auth-keys:
+  python3: true
+  clean:
+    - /usr/local/bin/wazo-auth-keys
+  bind:
+    etc/wazo-auth-keys/config.yml: /etc/wazo-auth-keys/config.yml
 wazo-call-logd:
   python3: true
   clean:
