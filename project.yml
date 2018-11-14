@@ -44,6 +44,8 @@ wazo-setupd:
     - /usr/local/bin/wazo-setupd
 wazo-setupd-client:
   python3: true
+xivo-agentd:
+  python2: true
 xivo-auth-client:
   python3: true
   python2: true
