@@ -111,6 +111,8 @@ xivo-agid:
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
+xivo-sysconfd:
+  python2: true
 xivo-web-interface:
   bind:
     src: /usr/share/xivo-web-interface
