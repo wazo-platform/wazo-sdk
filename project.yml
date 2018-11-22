@@ -46,17 +46,22 @@ wazo-setupd-client:
   python3: true
 xivo-agentd:
   python2: true
-xivo-auth-client:
-  python3: true
+xivo-agid:
   python2: true
-xivo-auth-keys:
-  python2: true
+  bind:
+    etc/xivo-agid/config.yml: /etc/xivo-agid/config.yml
+    bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
 xivo-amid:
   python2: true
   bind:
     etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
   clean:
     - /usr/local/bin/xivo-amid
+xivo-auth-client:
+  python2: true
+  python3: true
+xivo-auth-keys:
+  python2: true
 xivo-bus:
   python2: true
   python3: true
@@ -73,6 +78,9 @@ xivo-confgend:
   python2: true
   bind:
     etc/xivo-confgend/config.yml: /etc/xivo-confgend/config.yml
+xivo-config:
+  bind:
+    dialplan: /usr/share/xivo-config/dialplan
 xivo-ctid:
   python2: true
   bind:
@@ -89,11 +97,11 @@ xivo-dao:
 xivo-lib-python:
   python2: true
   python3: true
-wazo-libsccp:
-  bind: []
 xivo-lib-rest-client:
   python2: true
   python3: true
+wazo-libsccp:
+  bind: []
 xivo-manage-db:
   bind:
     alembic: /usr/share/xivo-manage-db/alembic
@@ -105,14 +113,6 @@ xivo-upgrade:
     post-stop.d: /usr/share/xivo-upgrade/post-stop.d
     pre-start.d: /usr/share/xivo-upgrade/pre-start.d
     pre-stop.d: /usr/share/xivo-upgrade/pre-stop.d
-xivo-agid:
-  python2: true
-  bind:
-    etc/xivo-agid/config.yml: /etc/xivo-agid/config.yml
-    bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
-xivo-config:
-  bind:
-    dialplan: /usr/share/xivo-config/dialplan
 xivo-sysconfd:
   python2: true
 xivo-web-interface:
