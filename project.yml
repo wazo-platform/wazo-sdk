@@ -34,6 +34,9 @@ wazo-dird:
     alembic: /usr/share/wazo-dird/alembic
   clean:
     - /usr/local/bin/wazo-dird
+xivo-dird-client:
+  python2: true
+  python3: true
 wazo-res-amqp:
   clean: []
 wazo-setupd:
