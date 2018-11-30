@@ -63,8 +63,6 @@ xivo-amid:
 xivo-auth-client:
   python2: true
   python3: true
-xivo-auth-keys:
-  python2: true
 xivo-bus:
   python2: true
   python3: true
