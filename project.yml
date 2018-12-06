@@ -58,6 +58,8 @@ xivo-agid:
   bind:
     etc/xivo-agid/config.yml: /etc/xivo-agid/config.yml
     bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
+  clean:
+    - /usr/local/bin/xivo-agid
 xivo-amid:
   python3: true
   bind:
