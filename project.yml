@@ -48,7 +48,7 @@ wazo-setupd:
 wazo-setupd-client:
   python3: true
 xivo-agentd:
-  python2: true
+  python3: true
 xivo-agid:
   python2: true
   bind:
