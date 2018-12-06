@@ -108,6 +108,9 @@ xivo-manage-db:
     alembic: /usr/share/xivo-manage-db/alembic
 xivo-provisioning:
   python2: true
+xivo-swagger-doc:
+  bind:
+    index.json: /usr/share/xivo-swagger-doc/catalog/index.json
 xivo-upgrade:
   bind:
     post-start.d: /usr/share/xivo-upgrade/post-start.d
