@@ -55,7 +55,7 @@ xivo-agid:
     etc/xivo-agid/config.yml: /etc/xivo-agid/config.yml
     bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
 xivo-amid:
-  python2: true
+  python3: true
   bind:
     etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
   clean:
