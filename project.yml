@@ -49,6 +49,10 @@ wazo-setupd-client:
   python3: true
 xivo-agentd:
   python3: true
+  bind:
+    etc/xivo-agentd/config.yml: /etc/xivo-agentd/config.yml
+  clean:
+    - /usr/local/bin/xivo-agentd
 xivo-agid:
   python2: true
   bind:
