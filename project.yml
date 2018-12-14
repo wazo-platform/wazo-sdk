@@ -85,6 +85,11 @@ xivo-confgend:
   python2: true
   bind:
     etc/xivo-confgend/config.yml: /etc/xivo-confgend/config.yml
+  clean:
+    - /usr/local/bin/xivo-confgend
+xivo-confgend-client:
+  bind:
+    bin/xivo-confgen: /usr/bin/xivo-confgen
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
