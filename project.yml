@@ -133,3 +133,9 @@ xivo-sysconfd:
 xivo-web-interface:
   bind:
     src: /usr/share/xivo-web-interface
+wazo-webhookd:
+  python3: true
+  bind:
+    etc/wazo-webhookd/config.yml: /etc/wazo-webhookd/config.yml
+  clean:
+    - /usr/local/bin/wazo-webhookd
