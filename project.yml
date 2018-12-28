@@ -27,6 +27,7 @@ wazo-call-logd:
   python3: true
   clean:
     - /usr/local/bin/wazo-call-logd
+    - /usr/local/bin/wazo-call-logs
 wazo-dird:
   python3: true
   bind:
