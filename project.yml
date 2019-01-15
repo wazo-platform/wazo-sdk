@@ -28,6 +28,12 @@ wazo-call-logd:
   clean:
     - /usr/local/bin/wazo-call-logd
     - /usr/local/bin/wazo-call-logs
+wazo-chatd:
+  python3: true
+  bind:
+    etc/wazo-chatd/config.yml: /etc/wazo-chatd/config.yml
+  clean:
+    - /usr/local/bin/wazo-chatd
 wazo-dird:
   python3: true
   bind:
