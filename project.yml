@@ -44,6 +44,9 @@ wazo-dird:
 wazo-dird-client:
   python2: true
   python3: true
+wazo-provd-client:
+  python2: true
+  python3: true
 wazo-res-amqp:
   clean: []
 wazo-setupd:
