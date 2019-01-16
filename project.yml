@@ -139,6 +139,8 @@ xivo-provisioning:
 xivo-swagger-doc:
   bind:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
+xivo-provd-cli:
+  python2: true
 xivo-upgrade:
   bind:
     post-start.d: /usr/share/xivo-upgrade/post-start.d
