@@ -134,6 +134,8 @@ xivo-manage-db:
     alembic: /usr/share/xivo-manage-db/alembic
 xivo-provisioning:
   python2: true
+  bind:
+    etc/xivo-provd: /etc/xivo-provd
 xivo-swagger-doc:
   bind:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
