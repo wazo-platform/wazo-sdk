@@ -116,6 +116,11 @@ xivo-ctid-ng:
 xivo-dao:
   python2: true
   python3: true
+xivo-dxtora:
+  python2: true
+  bind:
+    bin/xivo-dxtora: /usr/bin/xivo-dxtora
+    etc/xivo-dxtora/config.conf: /etc/xivo-dxtora/config.conf
 xivo-lib-python:
   python2: true
   python3: true
