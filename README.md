@@ -19,7 +19,7 @@ The recommended way to install `wdk` is to use a virtual environment.
 source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 mkvirtualenv --python /usr/bin/python3 wdk
 pip install -r requirements.txt
-pip install .
+pip install -e .
 sudo ln -s ~/.virtualenvs/wdk/bin/wdk /usr/local/bin/wdk
 ```
 
