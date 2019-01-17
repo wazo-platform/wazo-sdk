@@ -1,4 +1,6 @@
 cliff
+gitpython
+github3.py
 psutil
 sh
 jinja2

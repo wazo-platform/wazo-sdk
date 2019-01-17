@@ -23,6 +23,7 @@ setup(
             'mount = wazo_sdk.commands.mount:Mount',
             'umount = wazo_sdk.commands.mount:Umount',
             'restart = wazo_sdk.commands.restart:Restart',
+            'repo_clone = wazo_sdk.commands.repo_clone:RepoClone',
         ],
     },
 )
