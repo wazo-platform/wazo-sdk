@@ -51,6 +51,7 @@ class WDK(App):
         self._mounter = Mounter(self.LOG, self.config, self.state)
 
     def prepare_to_run_command(self, cmd):
+        cmd.config = self.config
         cmd.mounter = self._mounter
         cmd.service = self._service_manager
 

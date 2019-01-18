@@ -48,6 +48,10 @@ class Config:
             or _DEFAULT_PROJECT_FILENAME
         )
 
+    @property
+    def github_orgs(self):
+        return self._file_config.get('github_orgs')
+
     def get_project(self, short_name):
         name = self.get_project_name(short_name)
         return self._project_config[name]

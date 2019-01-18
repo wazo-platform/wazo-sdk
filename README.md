@@ -87,13 +87,13 @@ Note that new entry points will need the project to be unmounted and mounted aga
 ## Mounting a project
 
 ```sh
-wdk mount [<project1>, <project2>, ...<projectn>]
+wdk mount [-r] [<project1>, <project2>, ...<projectn>]
 ```
 
 ## Unmounting a project
 
 ```sh
-wdk umount [<project1>, <project2>, ...<projectn>]
+wdk umount [-r] [<project1>, <project2>, ...<projectn>]
 ```
 
 ## Listing mounted projects
@@ -107,6 +107,13 @@ wdk mount --list
 ```sh
 wdk restart [<project1>, <project2>]
 ```
+
+## Cloning all repos from GitHub
+
+```sh
+wdk repo clone
+```
+`wdk` will ask for your login/password and clone every repo of the GitHub orgs listed in the config.
 
 ## Troubleshooting
 
