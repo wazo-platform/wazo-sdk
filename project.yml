@@ -120,7 +120,7 @@ xivo-dxtora:
   python2: true
   bind:
     bin/xivo-dxtora: /usr/bin/xivo-dxtora
-    etc/xivo-dxtora/config.conf: /etc/xivo-dxtora/config.conf
+    etc/xivo-dxtora/config.yml: /etc/xivo-dxtora/config.yml
 xivo-lib-python:
   python2: true
   python3: true
