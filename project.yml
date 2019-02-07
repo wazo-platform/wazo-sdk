@@ -32,6 +32,7 @@ wazo-chatd:
   python3: true
   bind:
     etc/wazo-chatd/config.yml: /etc/wazo-chatd/config.yml
+    alembic: /usr/share/wazo-chatd/alembic
   clean:
     - /usr/local/bin/wazo-chatd
 wazo-dird:
