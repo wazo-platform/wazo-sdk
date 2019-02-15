@@ -1,3 +1,5 @@
+asterisk:
+  log_filename: /var/log/asterisk/full
 ari-py:
   python2: true
   python3: true
