@@ -69,6 +69,7 @@ The project file has the following structure
     <source>: <destination>
   clean:
     - </file/to/remove/when/done>
+  log_filename: <path-to-filename.log>  # default to /var/log/<project name>.log
 ```
 
 * project name: This is the name that matches your local source directory. ex: `wazo-auth`
@@ -114,6 +115,12 @@ wdk restart [<project1>, <project2>]
 wdk repo clone
 ```
 `wdk` will ask for your login/password and clone every repo of the GitHub orgs listed in the config.
+
+## Tailing a log files
+
+```sh
+wdk tailf <project>
+```
 
 ## Troubleshooting
 
