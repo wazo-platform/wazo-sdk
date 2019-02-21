@@ -132,6 +132,12 @@ xivo-lib-rest-client:
   python3: true
 wazo-libsccp:
   bind: []
+wazo-service:
+  python2: true
+  bind:
+    bin/wazo-service: /usr/bin/wazo-service
+  clean:
+    - /usr/local/bin/wazo-service-python
 xivo-manage-db:
   bind:
     alembic: /usr/share/xivo-manage-db/alembic
