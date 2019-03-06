@@ -106,10 +106,6 @@ xivo-confgend-client:
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
-xivo-ctid:
-  python2: true
-  bind:
-    etc/xivo-ctid/config.yml: /etc/xivo-ctid/config.yml
 xivo-ctid-ng:
   python3: true
   bind:
