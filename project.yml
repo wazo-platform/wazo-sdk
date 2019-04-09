@@ -155,9 +155,6 @@ xivo-upgrade:
     pre-stop.d: /usr/share/xivo-upgrade/pre-stop.d
 xivo-sysconfd:
   python2: true
-xivo-web-interface:
-  bind:
-    src: /usr/share/xivo-web-interface
 wazo-webhookd:
   python3: true
   bind:
