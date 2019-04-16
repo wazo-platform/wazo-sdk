@@ -1,4 +1,4 @@
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -73,6 +73,6 @@ class Config:
 
     def _read_yml_file(self, filename):
         try:
-            return yaml.load(open(filename, 'r'))
+            return yaml.safe_load(open(filename, 'r'))
         except IOError:
             return {}
