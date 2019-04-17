@@ -66,6 +66,8 @@ xivo-agentd:
     etc/xivo-agentd/config.yml: /etc/xivo-agentd/config.yml
   clean:
     - /usr/local/bin/xivo-agentd
+xivo-agentd-client:
+  python2: true
 xivo-agid:
   python2: true
   bind:
