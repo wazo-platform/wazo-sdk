@@ -108,12 +108,12 @@ xivo-confgend-client:
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
-xivo-ctid-ng:
+wazo-calld:
   python3: true
   bind:
-    etc/xivo-ctid-ng/config.yml: /etc/xivo-ctid-ng/config.yml
+    etc/wazo-calld/config.yml: /etc/wazo-calld/config.yml
   clean:
-    - /usr/local/bin/xivo-ctid-ng
+    - /usr/local/bin/wazo-calld
 xivo-dao:
   python2: true
   python3: true
