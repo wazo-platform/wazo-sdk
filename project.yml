@@ -108,6 +108,10 @@ xivo-confgend-client:
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
+    sbin/xivo-create-config: /usr/sbin/xivo-create-config
+    sbin/xivo-read-config: /usr/sbin/xivo-read-config
+    sbin/xivo-update-config: /usr/sbin/xivo-update-config
+    templates: /usr/share/xivo-config/templates
 wazo-calld:
   python3: true
   bind:
