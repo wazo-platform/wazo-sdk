@@ -37,6 +37,7 @@ wazo-chatd:
     alembic: /usr/share/wazo-chatd/alembic
   clean:
     - /usr/local/bin/wazo-chatd
+    - /usr/local/bin/wazo-chatd-init-db
 wazo-dird:
   python3: true
   bind:
