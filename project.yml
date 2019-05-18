@@ -51,6 +51,12 @@ wazo-dird:
 wazo-dird-client:
   python2: true
   python3: true
+wazo-dird-phoned:
+  python3: true
+  bind:
+    etc/wazo-dird-phoned/config.yml: /etc/wazo-dird-phoned/config.yml
+  clean:
+    - /usr/local/bin/wazo-dird-phoned
 wazo-provd-client:
   python2: true
   python3: true
@@ -122,12 +128,6 @@ wazo-calld:
 xivo-dao:
   python2: true
   python3: true
-xivo-dird-phoned:
-  python3: true
-  bind:
-    etc/xivo-dird-phoned/config.yml: /etc/xivo-dird-phoned/config.yml
-  clean:
-    - /usr/local/bin/xivo-dird-phoned
 xivo-dxtora:
   python2: true
   bind:
