@@ -78,6 +78,8 @@ xivo-agentd:
     - /usr/local/bin/xivo-agentd
 xivo-agentd-client:
   python2: true
+xivo-agentd-cli:
+  python2: true
 xivo-agid:
   python2: true
   bind:
