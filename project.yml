@@ -162,6 +162,7 @@ xivo-provisioning:
   bind:
     etc/xivo-provd: /etc/xivo-provd
   log_filename: /var/log/xivo-provd.log
+  service: xivo-provd
 xivo-swagger-doc:
   bind:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
