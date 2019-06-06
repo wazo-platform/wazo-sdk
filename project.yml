@@ -100,7 +100,7 @@ xivo-bus:
   python2: true
   python3: true
 xivo-confd:
-  python2: true
+  python3: true
   bind:
     etc/xivo-confd/config.yml: /etc/xivo-confd/config.yml
   clean:
