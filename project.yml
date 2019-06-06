@@ -41,6 +41,9 @@ wazo-chatd:
   clean:
     - /usr/local/bin/wazo-chatd
     - /usr/local/bin/wazo-chatd-init-db
+wazo-confd-client:
+  python2: true
+  python3: true
 wazo-dird:
   python3: true
   bind:
@@ -102,9 +105,6 @@ xivo-confd:
     etc/xivo-confd/config.yml: /etc/xivo-confd/config.yml
   clean:
     - /usr/local/bin/xivo-confd
-xivo-confd-client:
-  python2: true
-  python3: true
 xivo-confgend:
   python2: true
   bind:
