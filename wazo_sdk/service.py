@@ -12,7 +12,7 @@ class ServiceManager:
 
     def restart(self, service):
         project = self._config.get_project(service)
-        service_name = project.get('service', service)
+        service_name = project.get('service', self._config.get_project_name(service))
         ssh = sh.ssh.bake(self._config.hostname)
         ssh('systemctl restart {}'.format(service_name))
 
