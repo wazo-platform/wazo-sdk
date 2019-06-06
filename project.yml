@@ -185,3 +185,6 @@ wazo-webhookd:
     etc/wazo-webhookd/config.yml: /etc/wazo-webhookd/config.yml
   clean:
     - /usr/local/bin/wazo-webhookd
+wazo-webhookd-client:
+  python2: true
+  python3: true
