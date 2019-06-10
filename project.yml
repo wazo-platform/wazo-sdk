@@ -99,12 +99,12 @@ xivo-amid:
 xivo-bus:
   python2: true
   python3: true
-xivo-confd:
+wazo-confd:
   python3: true
   bind:
-    etc/xivo-confd/config.yml: /etc/xivo-confd/config.yml
+    etc/wazo-confd/config.yml: /etc/wazo-confd/config.yml
   clean:
-    - /usr/local/bin/xivo-confd
+    - /usr/local/bin/wazo-confd
 xivo-confgend:
   python2: true
   bind:
