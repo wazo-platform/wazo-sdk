@@ -184,6 +184,7 @@ wazo-webhookd:
   python3: true
   bind:
     etc/wazo-webhookd/config.yml: /etc/wazo-webhookd/config.yml
+    alembic: /usr/share/wazo-webhookd/alembic
   clean:
     - /usr/local/bin/wazo-webhookd
 wazo-webhookd-client:
