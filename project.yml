@@ -3,6 +3,12 @@ asterisk:
 ari-py:
   python2: true
   python3: true
+wazo-agentd:
+  python3: true
+  bind:
+    etc/wazo-agentd/config.yml: /etc/wazo-agentd/config.yml
+  clean:
+    - /usr/local/bin/wazo-agentd
 wazo-asterisk-config:
   bind:
     etc/asterisk/modules.conf: /etc/asterisk/modules.conf
@@ -73,12 +79,6 @@ wazo-setupd:
     - /usr/local/bin/wazo-setupd
 wazo-setupd-client:
   python3: true
-xivo-agentd:
-  python3: true
-  bind:
-    etc/xivo-agentd/config.yml: /etc/xivo-agentd/config.yml
-  clean:
-    - /usr/local/bin/xivo-agentd
 xivo-agentd-client:
   python2: true
 xivo-agentd-cli:
