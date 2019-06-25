@@ -79,9 +79,9 @@ wazo-setupd:
     - /usr/local/bin/wazo-setupd
 wazo-setupd-client:
   python3: true
-xivo-agentd-client:
+wazo-agentd-client:
   python2: true
-xivo-agentd-cli:
+wazo-agentd-cli:
   python2: true
 xivo-agid:
   python2: true
