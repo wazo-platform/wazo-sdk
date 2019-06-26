@@ -9,6 +9,10 @@ wazo-agentd:
     etc/wazo-agentd/config.yml: /etc/wazo-agentd/config.yml
   clean:
     - /usr/local/bin/wazo-agentd
+wazo-agentd-cli:
+  python2: true
+wazo-agentd-client:
+  python2: true
 wazo-asterisk-config:
   bind:
     etc/asterisk/modules.conf: /etc/asterisk/modules.conf
@@ -79,10 +83,6 @@ wazo-setupd:
     - /usr/local/bin/wazo-setupd
 wazo-setupd-client:
   python3: true
-wazo-agentd-client:
-  python2: true
-wazo-agentd-cli:
-  python2: true
 xivo-agid:
   python2: true
   bind:
