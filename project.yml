@@ -43,6 +43,9 @@ wazo-call-logd:
   clean:
     - /usr/local/bin/wazo-call-logd
     - /usr/local/bin/wazo-call-logs
+wazo-call-logd-client:
+  python2: true
+  python3: true
 wazo-chatd:
   python3: true
   bind:
@@ -96,6 +99,18 @@ xivo-amid:
     etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
   clean:
     - /usr/local/bin/xivo-amid
+wazo-plugind:
+  python3: true
+  bind:
+    etc/wazo-plugind/config.yml: /etc/wazo-plugind/config.yml
+  clean:
+    - /usr/local/bin/wazo-plugind
+wazo-purge-db:
+  python2: true
+  bind:
+    etc/wazo-purge-db/config.yml: /etc/wazo-purge-db/config.yml
+  clean:
+    - /usr/local/bin/wazo-purge-db
 xivo-bus:
   python2: true
   python3: true
