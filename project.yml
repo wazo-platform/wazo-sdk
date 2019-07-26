@@ -106,7 +106,7 @@ wazo-plugind:
   clean:
     - /usr/local/bin/wazo-plugind
 wazo-purge-db:
-  python2: true
+  python3: true
   bind:
     etc/wazo-purge-db/config.yml: /etc/wazo-purge-db/config.yml
   clean:
