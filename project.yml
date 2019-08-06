@@ -211,3 +211,9 @@ wazo-webhookd:
 wazo-webhookd-client:
   python2: true
   python3: true
+wazo-websocketd:
+  python3: true
+  bind:
+    etc/wazo-websocketd/config.yml: /etc/wazo-websocketd/config.yml
+  clean:
+    - /usr/local/bin/wazo-websocketd
