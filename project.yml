@@ -1,18 +1,23 @@
 asterisk:
   log_filename: /var/log/asterisk/full
+
 ari-py:
   python2: true
   python3: true
+
 wazo-agentd:
   python3: true
   bind:
     etc/wazo-agentd/config.yml: /etc/wazo-agentd/config.yml
   clean:
     - /usr/local/bin/wazo-agentd
+
 wazo-agentd-cli:
   python2: true
+
 wazo-agentd-client:
   python2: true
+
 wazo-agid:
   python2: true
   bind:
@@ -20,9 +25,11 @@ wazo-agid:
     bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
   clean:
     - /usr/local/bin/wazo-agid
+
 wazo-asterisk-config:
   bind:
     etc/asterisk/modules.conf: /etc/asterisk/modules.conf
+
 wazo-auth:
   python3: true
   bind:
@@ -32,27 +39,40 @@ wazo-auth:
     - /usr/local/bin/wazo-auth
     - /usr/local/bin/wazo-auth-init-db
     - /usr/local/bin/wazo-auth-bootstrap
+
 wazo-auth-cli:
   python3: true
   clean:
     - /usr/local/bin/wazo-auth-cli
+
 wazo-auth-client:
   python2: true
   python3: true
+
 wazo-auth-keys:
   python3: true
   clean:
     - /usr/local/bin/wazo-auth-keys
   bind:
     etc/wazo-auth-keys/config.yml: /etc/wazo-auth-keys/config.yml
+
 wazo-call-logd:
   python3: true
   clean:
     - /usr/local/bin/wazo-call-logd
     - /usr/local/bin/wazo-call-logs
+
 wazo-call-logd-client:
   python2: true
   python3: true
+
+wazo-calld:
+  python3: true
+  bind:
+    etc/wazo-calld/config.yml: /etc/wazo-calld/config.yml
+  clean:
+    - /usr/local/bin/wazo-calld
+
 wazo-chatd:
   python3: true
   bind:
@@ -61,9 +81,18 @@ wazo-chatd:
   clean:
     - /usr/local/bin/wazo-chatd
     - /usr/local/bin/wazo-chatd-init-db
+
+wazo-confd:
+  python3: true
+  bind:
+    etc/wazo-confd/config.yml: /etc/wazo-confd/config.yml
+  clean:
+    - /usr/local/bin/wazo-confd
+
 wazo-confd-client:
   python2: true
   python3: true
+
 wazo-dird:
   python3: true
   bind:
@@ -71,64 +100,107 @@ wazo-dird:
     alembic: /usr/share/wazo-dird/alembic
   clean:
     - /usr/local/bin/wazo-dird
+
 wazo-dird-client:
   python2: true
   python3: true
+
 wazo-dird-phoned:
   python3: true
   bind:
     etc/wazo-dird-phoned/config.yml: /etc/wazo-dird-phoned/config.yml
   clean:
     - /usr/local/bin/wazo-dird-phoned
-wazo-provd-client:
-  python2: true
-  python3: true
-wazo-res-amqp:
-  clean: []
-wazo-setupd:
-  python3: true
-  bind:
-    etc/wazo-setupd/config.yml: /etc/wazo-setupd/config.yml
-  clean:
-    - /usr/local/bin/wazo-setupd
-wazo-setupd-client:
-  python3: true
-xivo-amid:
-  python3: true
-  bind:
-    etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
-  clean:
-    - /usr/local/bin/xivo-amid
+
+wazo-libsccp:
+  bind: []
+
 wazo-plugind:
   python3: true
   bind:
     etc/wazo-plugind/config.yml: /etc/wazo-plugind/config.yml
   clean:
     - /usr/local/bin/wazo-plugind
+
 wazo-purge-db:
   python3: true
   bind:
     etc/wazo-purge-db/config.yml: /etc/wazo-purge-db/config.yml
   clean:
     - /usr/local/bin/wazo-purge-db
+
+wazo-provd-client:
+  python2: true
+  python3: true
+
+wazo-ui:
+  python3: true
+  bind:
+    etc/wazo-ui/config.yml: /etc/wazo-ui/config.yml
+  clean:
+    - /usr/local/bin/wazo-ui
+
+wazo-res-amqp:
+  clean: []
+
+wazo-service:
+  python2: true
+  bind:
+    bin/wazo-service: /usr/bin/wazo-service
+  clean:
+    - /usr/local/bin/wazo-service-python
+
+wazo-setupd:
+  python3: true
+  bind:
+    etc/wazo-setupd/config.yml: /etc/wazo-setupd/config.yml
+  clean:
+    - /usr/local/bin/wazo-setupd
+
+wazo-setupd-client:
+  python3: true
+
+wazo-webhookd:
+  python3: true
+  bind:
+    etc/wazo-webhookd/config.yml: /etc/wazo-webhookd/config.yml
+    alembic: /usr/share/wazo-webhookd/alembic
+  clean:
+    - /usr/local/bin/wazo-webhookd
+
+wazo-webhookd-client:
+  python2: true
+  python3: true
+
+wazo-websocketd:
+  python3: true
+  bind:
+    etc/wazo-websocketd/config.yml: /etc/wazo-websocketd/config.yml
+  clean:
+    - /usr/local/bin/wazo-websocketd
+
+xivo-amid:
+  python3: true
+  bind:
+    etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
+  clean:
+    - /usr/local/bin/xivo-amid
+
 xivo-bus:
   python2: true
   python3: true
-wazo-confd:
-  python3: true
-  bind:
-    etc/wazo-confd/config.yml: /etc/wazo-confd/config.yml
-  clean:
-    - /usr/local/bin/wazo-confd
+
 xivo-confgend:
   python2: true
   bind:
     etc/xivo-confgend/config.yml: /etc/xivo-confgend/config.yml
   clean:
     - /usr/local/bin/xivo-confgend
+
 xivo-confgend-client:
   bind:
     bin/xivo-confgen: /usr/bin/xivo-confgen
+
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
@@ -136,34 +208,25 @@ xivo-config:
     sbin/xivo-read-config: /usr/sbin/xivo-read-config
     sbin/xivo-update-config: /usr/sbin/xivo-update-config
     templates: /usr/share/xivo-config/templates
-wazo-calld:
-  python3: true
-  bind:
-    etc/wazo-calld/config.yml: /etc/wazo-calld/config.yml
-  clean:
-    - /usr/local/bin/wazo-calld
+
 xivo-dao:
   python2: true
   python3: true
+
 xivo-dxtora:
   python2: true
   bind:
     bin/xivo-dxtora: /usr/bin/xivo-dxtora
     etc/xivo-dxtora/config.yml: /etc/xivo-dxtora/config.yml
+
 xivo-lib-python:
   python2: true
   python3: true
+
 xivo-lib-rest-client:
   python2: true
   python3: true
-wazo-libsccp:
-  bind: []
-wazo-service:
-  python2: true
-  bind:
-    bin/wazo-service: /usr/bin/wazo-service
-  clean:
-    - /usr/local/bin/wazo-service-python
+
 xivo-manage-db:
   bind:
     bin/xivo-check-db: /usr/bin/xivo-check-db
@@ -172,23 +235,17 @@ xivo-manage-db:
     bin/pg-drop-db: /usr/lib/xivo-manage-db/pg-drop-db
     bin/pg-populate-db: /usr/lib/xivo-manage-db/pg-populate-db
     alembic: /usr/share/xivo-manage-db/alembic
+
 xivo-provisioning:
   python2: true
   bind:
     etc/xivo-provd: /etc/xivo-provd
   log_filename: /var/log/xivo-provd.log
   service: xivo-provd
-xivo-swagger-doc:
-  bind:
-    index.json: /usr/share/xivo-swagger-doc/catalog/index.json
+
 xivo-provd-cli:
   python2: true
-wazo-ui:
-  python3: true
-  bind:
-    etc/wazo-ui/config.yml: /etc/wazo-ui/config.yml
-  clean:
-    - /usr/local/bin/wazo-ui
+
 xivo-upgrade:
   bind:
     post-start.d: /usr/share/xivo-upgrade/post-start.d
@@ -196,24 +253,14 @@ xivo-upgrade:
     pre-start.d: /usr/share/xivo-upgrade/pre-start.d
     pre-stop.d: /usr/share/xivo-upgrade/pre-stop.d
     etc/wazo-upgrade/config.yml: /etc/wazo-upgrade/config.yml
+
 xivo-utils:
   bind:
     sbin/wazo-reset: /usr/sbin/wazo-reset
+
+xivo-swagger-doc:
+  bind:
+    index.json: /usr/share/xivo-swagger-doc/catalog/index.json
+
 xivo-sysconfd:
   python2: true
-wazo-webhookd:
-  python3: true
-  bind:
-    etc/wazo-webhookd/config.yml: /etc/wazo-webhookd/config.yml
-    alembic: /usr/share/wazo-webhookd/alembic
-  clean:
-    - /usr/local/bin/wazo-webhookd
-wazo-webhookd-client:
-  python2: true
-  python3: true
-wazo-websocketd:
-  python3: true
-  bind:
-    etc/wazo-websocketd/config.yml: /etc/wazo-websocketd/config.yml
-  clean:
-    - /usr/local/bin/wazo-websocketd
