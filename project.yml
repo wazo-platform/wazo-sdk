@@ -183,6 +183,12 @@ xivo-swagger-doc:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
 xivo-provd-cli:
   python2: true
+wazo-ui:
+  python3: true
+  bind:
+    etc/wazo-ui/config.yml: /etc/wazo-ui/config.yml
+  clean:
+    - /usr/local/bin/wazo-ui
 xivo-upgrade:
   bind:
     post-start.d: /usr/share/xivo-upgrade/post-start.d
