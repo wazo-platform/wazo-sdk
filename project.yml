@@ -243,7 +243,7 @@ wazo-provd:
   log_filename: /var/log/wazo-provd.log
   service: wazo-provd
 
-xivo-provd-cli:
+wazo-provd-cli:
   python2: true
 
 xivo-upgrade:
