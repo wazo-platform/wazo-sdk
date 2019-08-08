@@ -236,14 +236,14 @@ xivo-manage-db:
     bin/pg-populate-db: /usr/lib/xivo-manage-db/pg-populate-db
     alembic: /usr/share/xivo-manage-db/alembic
 
-xivo-provisioning:
+wazo-provd:
   python2: true
   bind:
-    etc/xivo-provd: /etc/xivo-provd
-  log_filename: /var/log/xivo-provd.log
-  service: xivo-provd
+    etc/wazo-provd: /etc/wazo-provd
+  log_filename: /var/log/wazo-provd.log
+  service: wazo-provd
 
-xivo-provd-cli:
+wazo-provd-cli:
   python2: true
 
 xivo-upgrade:
