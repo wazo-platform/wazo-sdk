@@ -105,15 +105,15 @@ wazo-dird-client:
   python2: true
   python3: true
 
-wazo-dird-phoned:
-  python3: true
-  bind:
-    etc/wazo-dird-phoned/config.yml: /etc/wazo-dird-phoned/config.yml
-  clean:
-    - /usr/local/bin/wazo-dird-phoned
-
 wazo-libsccp:
   bind: []
+
+wazo-phoned:
+  python3: true
+  bind:
+    etc/wazo-phoned/config.yml: /etc/wazo-phoned/config.yml
+  clean:
+    - /usr/local/bin/wazo-phoned
 
 wazo-plugind:
   python3: true
