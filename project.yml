@@ -236,6 +236,10 @@ xivo-manage-db:
     bin/pg-populate-db: /usr/lib/xivo-manage-db/pg-populate-db
     alembic: /usr/share/xivo-manage-db/alembic
 
+xivo-monitoring:
+  bind:
+    xivo-monitoring-update: /usr/sbin/xivo-monitoring-update
+
 wazo-provd:
   python2: true
   bind:
