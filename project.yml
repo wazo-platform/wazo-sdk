@@ -26,6 +26,13 @@ wazo-agid:
   clean:
     - /usr/local/bin/wazo-agid
 
+wazo-amid:
+  python3: true
+  bind:
+    etc/wazo-amid/config.yml: /etc/wazo-amid/config.yml
+  clean:
+    - /usr/local/bin/wazo-amid
+
 wazo-asterisk-config:
   bind:
     etc/asterisk/modules.conf: /etc/asterisk/modules.conf
@@ -178,13 +185,6 @@ wazo-websocketd:
     etc/wazo-websocketd/config.yml: /etc/wazo-websocketd/config.yml
   clean:
     - /usr/local/bin/wazo-websocketd
-
-xivo-amid:
-  python3: true
-  bind:
-    etc/xivo-amid/config.yml: /etc/xivo-amid/config.yml
-  clean:
-    - /usr/local/bin/xivo-amid
 
 xivo-bus:
   python2: true
