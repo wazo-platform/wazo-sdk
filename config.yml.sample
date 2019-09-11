@@ -14,4 +14,4 @@ cache_dir: ~/.local/cache/wdk
 
 # The GitHub organisations to clone from
 github_orgs:
-  - wazo-pbx
+  - wazo-platform
