@@ -250,12 +250,12 @@ wazo-provd:
 wazo-provd-cli:
   python2: true
 
-xivo-upgrade:
+wazo-upgrade:
   bind:
-    post-start.d: /usr/share/xivo-upgrade/post-start.d
-    post-stop.d: /usr/share/xivo-upgrade/post-stop.d
-    pre-start.d: /usr/share/xivo-upgrade/pre-start.d
-    pre-stop.d: /usr/share/xivo-upgrade/pre-stop.d
+    post-start.d: /usr/share/wazo-upgrade/post-start.d
+    post-stop.d: /usr/share/wazo-upgrade/post-stop.d
+    pre-start.d: /usr/share/wazo-upgrade/pre-start.d
+    pre-stop.d: /usr/share/wazo-upgrade/pre-stop.d
     etc/wazo-upgrade/config.yml: /etc/wazo-upgrade/config.yml
 
 xivo-utils:
