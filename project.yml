@@ -100,6 +100,13 @@ wazo-confd-client:
   python2: true
   python3: true
 
+wazo-confgend:
+  python2: true
+  bind:
+    etc/wazo-confgend/config.yml: /etc/wazo-confgend/config.yml
+  clean:
+    - /usr/local/bin/wazo-confgend
+
 wazo-dird:
   python3: true
   bind:
@@ -189,13 +196,6 @@ wazo-websocketd:
 xivo-bus:
   python2: true
   python3: true
-
-xivo-confgend:
-  python2: true
-  bind:
-    etc/xivo-confgend/config.yml: /etc/xivo-confgend/config.yml
-  clean:
-    - /usr/local/bin/xivo-confgend
 
 xivo-confgend-client:
   bind:
