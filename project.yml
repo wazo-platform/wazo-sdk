@@ -107,6 +107,10 @@ wazo-confgend:
   clean:
     - /usr/local/bin/wazo-confgend
 
+wazo-confgend-client:
+  bind:
+    bin/wazo-confgen: /usr/bin/wazo-confgen
+
 wazo-dird:
   python3: true
   bind:
@@ -196,10 +200,6 @@ wazo-websocketd:
 xivo-bus:
   python2: true
   python3: true
-
-xivo-confgend-client:
-  bind:
-    bin/xivo-confgen: /usr/bin/xivo-confgen
 
 xivo-config:
   bind:
