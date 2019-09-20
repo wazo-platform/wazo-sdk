@@ -123,6 +123,12 @@ wazo-dird-client:
   python2: true
   python3: true
 
+wazo-dxtora:
+  python2: true
+  bind:
+    bin/wazo-dxtora: /usr/bin/wazo-dxtora
+    etc/wazo-dxtora/config.yml: /etc/wazo-dxtora/config.yml
+
 wazo-libsccp:
   bind: []
 
@@ -212,12 +218,6 @@ xivo-config:
 xivo-dao:
   python2: true
   python3: true
-
-xivo-dxtora:
-  python2: true
-  bind:
-    bin/xivo-dxtora: /usr/bin/xivo-dxtora
-    etc/xivo-dxtora/config.yml: /etc/xivo-dxtora/config.yml
 
 xivo-lib-python:
   python2: true
