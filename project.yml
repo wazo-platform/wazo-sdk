@@ -129,6 +129,10 @@ wazo-dxtora:
     bin/wazo-dxtora: /usr/bin/wazo-dxtora
     etc/wazo-dxtora/config.yml: /etc/wazo-dxtora/config.yml
 
+wazo-lib-rest-client:
+  python2: true
+  python3: true
+
 wazo-libsccp:
   bind: []
 
@@ -220,10 +224,6 @@ xivo-dao:
   python3: true
 
 xivo-lib-python:
-  python2: true
-  python3: true
-
-xivo-lib-rest-client:
   python2: true
   python3: true
 
