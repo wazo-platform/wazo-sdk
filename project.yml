@@ -80,6 +80,10 @@ wazo-calld:
   clean:
     - /usr/local/bin/wazo-calld
 
+wazo-calld-client:
+  python2: true
+  python3: true
+
 wazo-chatd:
   python3: true
   bind:
