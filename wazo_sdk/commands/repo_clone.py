@@ -5,7 +5,6 @@ import logging
 import os
 
 from cliff.command import Command
-from getpass import getpass
 from git import Repo
 from github3 import login
 
@@ -16,11 +15,15 @@ class RepoClone(Command):
         if not self.config.github_orgs:
             self.app.LOG.error('No GitHub organisations configured')
             return
+        if not self.config.github_username:
+            self.app.LOG.error('No GitHub username configured')
+            return
+        if not self.config.github_token:
+            self.app.LOG.error('No GitHub personal access token configured')
+            return
 
-        user = getpass('GitHub user: ')
-        password = getpass('GitHub password for {0}: '.format(user))
         logging.getLogger('github3').setLevel(logging.WARNING)
-        github = login(user, password)
+        github = login(self.config.github_username, self.config.github_token)
         for org_name in self.config.github_orgs:
             for repo in github.organization(org_name).repositories():
                 self.app.LOG.info('Cloning %s...', repo.name)

@@ -12,6 +12,9 @@ project_file: ~/.config/wdk/project.yml
 
 cache_dir: ~/.local/cache/wdk
 
+# Your GitHub credentials. The token needs only read access.
+github_username: john
+github_token: 123456789abcdef0123456789abcdef012345678
 # The GitHub organisations to clone from
 github_orgs:
   - wazo-platform
