@@ -16,7 +16,7 @@ sync {
     delay = 1,
     source = "{{ source }}",
     target = "{{ host }}:{{ destination }}",
-    exclude = {'.git'},
+    exclude = {'.git', '.tox'},
     rsync = {
         xattrs = true,
         archive = true,
