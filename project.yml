@@ -42,6 +42,7 @@ wazo-auth:
   bind:
     alembic: /usr/share/wazo-auth/alembic
     etc/wazo-auth/config.yml: /etc/wazo-auth/config.yml
+    templates: /var/lib/wazo-auth/templates
   clean:
     - /usr/local/bin/wazo-auth
     - /usr/local/bin/wazo-auth-init-db
