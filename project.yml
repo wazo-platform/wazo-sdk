@@ -13,10 +13,11 @@ wazo-agentd:
     - /usr/local/bin/wazo-agentd
 
 wazo-agentd-cli:
-  python2: true
+  python3: true
 
 wazo-agentd-client:
   python2: true
+  python3: true
 
 wazo-agid:
   python2: true
