@@ -2,7 +2,6 @@ asterisk:
   log_filename: /var/log/asterisk/full
 
 ari-py:
-  python2: true
   python3: true
 
 wazo-agentd:
@@ -11,9 +10,12 @@ wazo-agentd:
     etc/wazo-agentd/config.yml: /etc/wazo-agentd/config.yml
   clean:
     - /usr/local/bin/wazo-agentd
+    - /usr/local/bin/wazo-agentd-wait
 
 wazo-agentd-cli:
   python3: true
+  clean:
+    - /usr/local/bin/wazo-agentd-cli
 
 wazo-agentd-client:
   python2: true
@@ -201,6 +203,8 @@ wazo-webhookd:
     alembic: /usr/share/wazo-webhookd/alembic
   clean:
     - /usr/local/bin/wazo-webhookd
+    - /usr/local/bin/wazo-webhookd-init-amqp
+    - /usr/local/bin/wazo-webhookd-init-db
 
 wazo-webhookd-client:
   python2: true
@@ -255,6 +259,8 @@ wazo-provd:
 
 wazo-provd-cli:
   python2: true
+  clean:
+    - /usr/local/bin/wazo-provd-cli
 
 wazo-upgrade:
   bind:
