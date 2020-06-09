@@ -158,6 +158,11 @@ wazo-plugind:
   clean:
     - /usr/local/bin/wazo-plugind
 
+wazo-plugind-cli:
+  python3: true
+  clean:
+    - /usr/local/bin/wazo-plugind-cli
+
 wazo-purge-db:
   python3: true
   bind:
