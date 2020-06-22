@@ -50,6 +50,7 @@ wazo-auth:
     - /usr/local/bin/wazo-auth
     - /usr/local/bin/wazo-auth-init-db
     - /usr/local/bin/wazo-auth-bootstrap
+    - /usr/local/bin/wazo-auth-wait
 
 wazo-auth-cli:
   python3: true
