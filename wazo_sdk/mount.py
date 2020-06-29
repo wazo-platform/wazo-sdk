@@ -49,9 +49,12 @@ class Mounter:
     def list_(self):
         mounts = self._state.get_mounts(self._hostname)
         for mount in list(mounts.values()):
-            yield mount['project'], self._is_lsync_running(mount)
+            yield mount['project'], self._is_sync_running(mount)
 
-    def _is_lsync_running(self, mount):
+    def _is_sync_running(self, mount):
+        if self._config.rsyncOnly:
+            return True
+
         pid_filename = mount['lsync_pidfile']
         try:
             with open(pid_filename, 'r') as f:
@@ -77,7 +80,7 @@ class Mounter:
         if not mount:
             return False
 
-        return self._is_lsync_running(mount)
+        return self._is_sync_running(mount)
 
     def mount(self, repo_name):
         if not self._hostname:
