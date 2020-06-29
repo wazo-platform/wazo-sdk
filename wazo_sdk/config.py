@@ -27,7 +27,7 @@ class Config:
 
     @property
     def rsyncOnly(self):
-        return self._args.rsync_only or False
+        return self._args.rsync_only or self._file_config.get('rsyncOnly') or False
 
     @property
     def local_source(self):
