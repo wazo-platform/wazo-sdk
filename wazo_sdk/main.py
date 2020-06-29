@@ -34,6 +34,8 @@ class WDK(App):
         parser.add_argument('--project-file', help='Project configuration file', default=None)
         parser.add_argument('--hostname', help='The remote host when Wazo is installed')
         parser.add_argument('--dev-dir', help='Where the local source code is')
+        parser.add_argument('--rsync-only', action='store_true', help='Use rsync only to mount/unmount respositories', default=False)
+
         return parser
 
     def initialize_app(self, argv):

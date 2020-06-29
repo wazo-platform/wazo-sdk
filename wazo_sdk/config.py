@@ -26,6 +26,10 @@ class Config:
         return self._args.hostname or self._file_config.get('hostname')
 
     @property
+    def rsyncOnly(self):
+        return self._args.rsync_only or False
+
+    @property
     def local_source(self):
         return os.path.expanduser(
             self._args.dev_dir or self._file_config.get('local_source')
