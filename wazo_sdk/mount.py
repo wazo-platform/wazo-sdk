@@ -248,6 +248,9 @@ class Mounter:
         self._state.add_mount(self._hostname, real_repo_name, config_filename, pid_filename)
 
     def _stop_sync(self, repo_name):
+        if self._config.rsyncOnly:
+            return
+
         mount = self._state.get_mount(self._hostname, repo_name)
         if not mount:
             self.logger.error('failed to find a matching mount to stop')
