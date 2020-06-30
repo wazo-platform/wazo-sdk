@@ -54,7 +54,7 @@ class Mounter:
             yield mount['project'], self._is_sync_running(mount)
 
     def _is_sync_running(self, mount):
-        if self._config.rsyncOnly:
+        if self._config.rsync_only:
             return True
 
         pid_filename = mount['lsync_pidfile']
@@ -95,7 +95,7 @@ class Mounter:
         real_repo_name = self._config.get_project_name(repo_name)
 
         # Skip this condition if we are in rsync only mode, because files a not synced automatically
-        if not self._config.rsyncOnly and self._is_mounted_and_running(real_repo_name):
+        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
             self._start_sync(local_repo_name, real_repo_name)
@@ -218,7 +218,7 @@ class Mounter:
         local_path = os.path.join(self._local_dir, local_repo_name)
         remote_path = os.path.join(self._remote_dir, real_repo_name)
 
-        if self._config.rsyncOnly:
+        if self._config.rsync_only:
             sync_command = ['rsync', *RSYNC_OPTIONS, local_path+'/', self._hostname+":"+remote_path+'/']
             config_filename = None
             pid_filename = None
@@ -250,7 +250,7 @@ class Mounter:
         self._state.add_mount(self._hostname, real_repo_name, config_filename, pid_filename)
 
     def _stop_sync(self, repo_name):
-        if self._config.rsyncOnly:
+        if self._config.rsync_only:
             return
 
         mount = self._state.get_mount(self._hostname, repo_name)
