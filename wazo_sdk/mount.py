@@ -222,6 +222,7 @@ class Mounter:
             sync_command = ['rsync', *RSYNC_OPTIONS, local_path+'/', self._hostname+":"+remote_path+'/']
             config_filename = None
             pid_filename = None
+            communicate_kwargs = {}
         else:
             config = LSYNC_CONFIG_TEMPLATE.render(
                 source=local_path, host=self._hostname, destination=remote_path)
@@ -232,12 +233,13 @@ class Mounter:
 
             pid_filename = '{}.pid'.format(config_filename)
             sync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
+            communicate_kwargs = {'timeout': 1}
 
         # Run sync command
         self.logger.debug('%s', ' '.join(sync_command))
         proc = subprocess.Popen(sync_command)
         try:
-            outs, errs = proc.communicate(timeout=1)
+            outs, errs = proc.communicate(**communicate_kwargs)
             if errs:
                 self.logger.info('%s failed %s', ' '.join(sync_command), errs)
                 return
