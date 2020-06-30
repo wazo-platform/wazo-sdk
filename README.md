@@ -2,16 +2,17 @@
 
 Developer tool kit for Wazo development
 
-
 ## Installation
 
 `wdk` depends on lsyncd. It can be installed on a Debian or Ubuntu with the following
 commands. If you running on macOS, lsyncd won't work, so you must set `rsync_only` option to `true`.
 
 ### Installing WDK
+
 The recommended way to install `wdk` is to use a virtual environment.
 
 #### Debian Instructions
+
 ```sh
 sudo apt update
 sudo apt install lsyncd virtualenvwrapper python3-dev
@@ -20,6 +21,7 @@ mkvirtualenv --python /usr/bin/python3 wdk
 ```
 
 #### macOS Instructions
+
 ```sh
 brew install rsync # install latest
 brew install python # install python3
@@ -31,6 +33,7 @@ source ~/.virtualenvs/wdk/bin/activate
 ```
 
 #### WDK Dependencies
+
 ```sh
 pip install -r requirements.txt
 pip install -e .
@@ -56,7 +59,6 @@ apt install rsync
 mkdir /usr/src/wazo  # or whatever your <local_source>
 ```
 
-
 ## Configuration
 
 The default location of the configuration file is `~/.config/wdk/config.yml` you can check
@@ -64,7 +66,6 @@ The default location of the configuration file is `~/.config/wdk/config.yml` you
 
 If you wish to use another location for you configuration file you can use the `--config` flag
 when launching `wdk` or set the `WDK_CONFIG_FILE` environment variable to the config file location.
-
 
 ### Project configuration
 
@@ -97,7 +98,6 @@ file.
 
 Note that new entry points will need the project to be unmounted and mounted again to be applied.
 
-
 ## Mounting a project
 
 ```sh
@@ -127,6 +127,7 @@ wdk restart [<project1>, <project2>]
 ```sh
 wdk repo clone
 ```
+
 `wdk` will ask for your login/password and clone every repo of the GitHub orgs listed in the config.
 
 ## Tailing a log files
@@ -162,7 +163,7 @@ lsyncd -nodaemon -delay 1 -rsyncssh /home/user/git/origin/wazo-confd wazo.exampl
 
 * `echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p`
 
-For more information: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
+For more information: <https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers>
 
 ## The state file
 
