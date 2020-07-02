@@ -25,6 +25,8 @@ sync {
 }
 ''')
 
+RSYNC_OPTIONS = ['--xattrs', '--archive', '--perms', "--exclude={'.git','.tox','node_modules'}"]
+
 
 def _list_processes():
     for pid in psutil.pids():
@@ -49,9 +51,12 @@ class Mounter:
     def list_(self):
         mounts = self._state.get_mounts(self._hostname)
         for mount in list(mounts.values()):
-            yield mount['project'], self._is_lsync_running(mount)
+            yield mount['project'], self._is_sync_running(mount)
 
-    def _is_lsync_running(self, mount):
+    def _is_sync_running(self, mount):
+        if self._config.rsync_only:
+            return True
+
         pid_filename = mount['lsync_pidfile']
         try:
             with open(pid_filename, 'r') as f:
@@ -77,7 +82,7 @@ class Mounter:
         if not mount:
             return False
 
-        return self._is_lsync_running(mount)
+        return self._is_sync_running(mount)
 
     def mount(self, repo_name):
         if not self._hostname:
@@ -89,7 +94,8 @@ class Mounter:
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
 
-        if self._is_mounted_and_running(real_repo_name):
+        # Skip this condition if we are in rsync only mode, because files a not synced automatically
+        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
             self._start_sync(local_repo_name, real_repo_name)
@@ -212,30 +218,41 @@ class Mounter:
         local_path = os.path.join(self._local_dir, local_repo_name)
         remote_path = os.path.join(self._remote_dir, real_repo_name)
 
-        config = LSYNC_CONFIG_TEMPLATE.render(
-            source=local_path, host=self._hostname, destination=remote_path)
+        if self._config.rsync_only:
+            sync_command = ['rsync', *RSYNC_OPTIONS, local_path+'/', self._hostname+":"+remote_path+'/']
+            config_filename = None
+            pid_filename = None
+            communicate_kwargs = {}
+        else:
+            config = LSYNC_CONFIG_TEMPLATE.render(
+                source=local_path, host=self._hostname, destination=remote_path)
 
-        with tempfile.NamedTemporaryFile(mode='w', dir=self._config.cache_dir, delete=False) as f:
-            config_filename = f.name
-            f.write(config)
+            with tempfile.NamedTemporaryFile(mode='w', dir=self._config.cache_dir, delete=False) as f:
+                config_filename = f.name
+                f.write(config)
 
-        pid_filename = '{}.pid'.format(config_filename)
-        lsync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
+            pid_filename = '{}.pid'.format(config_filename)
+            sync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
+            communicate_kwargs = {'timeout': 1}
 
-        self.logger.debug('%s', ' '.join(lsync_command))
-        proc = subprocess.Popen(lsync_command)
+        # Run sync command
+        self.logger.debug('%s', ' '.join(sync_command))
+        proc = subprocess.Popen(sync_command)
         try:
-            outs, errs = proc.communicate(timeout=1)
+            outs, errs = proc.communicate(**communicate_kwargs)
             if errs:
-                self.logger.info('%s failed %s', ' '.join(lsync_command), errs)
+                self.logger.info('%s failed %s', ' '.join(sync_command), errs)
                 return
         except subprocess.TimeoutExpired:
-            self.logger.info('%s failed %s', ' '.join(lsync_command), 'timeout')
+            self.logger.info('%s failed %s', ' '.join(sync_command), 'timeout')
             return
 
         self._state.add_mount(self._hostname, real_repo_name, config_filename, pid_filename)
 
     def _stop_sync(self, repo_name):
+        if self._config.rsync_only:
+            return
+
         mount = self._state.get_mount(self._hostname, repo_name)
         if not mount:
             self.logger.error('failed to find a matching mount to stop')
