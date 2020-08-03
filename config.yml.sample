@@ -1,4 +1,4 @@
-# The Wazo on which you wish to work
+# The Wazo on which you wish to work: [user@]wazo.example.com
 hostname: wazo-dev
 
 # The location of you local copy of the Wazo source code
