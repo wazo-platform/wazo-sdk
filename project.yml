@@ -104,6 +104,7 @@ wazo-confd:
     etc/wazo-confd/config.yml: /etc/wazo-confd/config.yml
   clean:
     - /usr/local/bin/wazo-confd
+    - /usr/local/bin/wazo-confd-sync-db
 
 wazo-confd-client:
   python2: true
