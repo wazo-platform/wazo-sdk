@@ -25,7 +25,7 @@ sync {
 }
 ''')
 
-RSYNC_OPTIONS = ['--xattrs', '--archive', '--perms', "--exclude={'.git','.tox','node_modules'}"]
+RSYNC_OPTIONS = ['--xattrs', '--archive', '--perms', '--delete', "--exclude={'.git','.tox','node_modules'}"]
 
 
 def _list_processes():
