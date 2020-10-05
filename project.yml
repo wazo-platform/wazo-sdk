@@ -172,16 +172,21 @@ wazo-purge-db:
   clean:
     - /usr/local/bin/wazo-purge-db
 
+wazo-provd:
+  python2: true
+  bind:
+    etc/wazo-provd: /etc/wazo-provd
+  log_filename: /var/log/wazo-provd.log
+  service: wazo-provd
+
+wazo-provd-cli:
+  python2: true
+  clean:
+    - /usr/local/bin/wazo-provd-cli
+
 wazo-provd-client:
   python2: true
   python3: true
-
-wazo-ui:
-  python3: true
-  bind:
-    etc/wazo-ui/config.yml: /etc/wazo-ui/config.yml
-  clean:
-    - /usr/local/bin/wazo-ui
 
 wazo-res-amqp:
   clean: []
@@ -202,6 +207,21 @@ wazo-setupd:
 
 wazo-setupd-client:
   python3: true
+
+wazo-ui:
+  python3: true
+  bind:
+    etc/wazo-ui/config.yml: /etc/wazo-ui/config.yml
+  clean:
+    - /usr/local/bin/wazo-ui
+
+wazo-upgrade:
+  bind:
+    post-start.d: /usr/share/wazo-upgrade/post-start.d
+    post-stop.d: /usr/share/wazo-upgrade/post-stop.d
+    pre-start.d: /usr/share/wazo-upgrade/pre-start.d
+    pre-stop.d: /usr/share/wazo-upgrade/pre-stop.d
+    etc/wazo-upgrade/config.yml: /etc/wazo-upgrade/config.yml
 
 wazo-webhookd:
   python3: true
@@ -257,33 +277,13 @@ xivo-monitoring:
   bind:
     xivo-monitoring-update: /usr/sbin/xivo-monitoring-update
 
-wazo-provd:
-  python2: true
-  bind:
-    etc/wazo-provd: /etc/wazo-provd
-  log_filename: /var/log/wazo-provd.log
-  service: wazo-provd
-
-wazo-provd-cli:
-  python2: true
-  clean:
-    - /usr/local/bin/wazo-provd-cli
-
-wazo-upgrade:
-  bind:
-    post-start.d: /usr/share/wazo-upgrade/post-start.d
-    post-stop.d: /usr/share/wazo-upgrade/post-stop.d
-    pre-start.d: /usr/share/wazo-upgrade/pre-start.d
-    pre-stop.d: /usr/share/wazo-upgrade/pre-stop.d
-    etc/wazo-upgrade/config.yml: /etc/wazo-upgrade/config.yml
-
-xivo-utils:
-  bind:
-    sbin/wazo-reset: /usr/sbin/wazo-reset
-
 xivo-swagger-doc:
   bind:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
 
 xivo-sysconfd:
   python2: true
+
+xivo-utils:
+  bind:
+    sbin/wazo-reset: /usr/sbin/wazo-reset
