@@ -277,6 +277,11 @@ xivo-monitoring:
   bind:
     xivo-monitoring-update: /usr/sbin/xivo-monitoring-update
 
+xivo-stat:
+  python2: true
+  bind:
+    bin/xivo-stat: /usr/bin/xivo-stat
+
 xivo-swagger-doc:
   bind:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
