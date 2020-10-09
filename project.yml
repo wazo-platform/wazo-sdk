@@ -208,6 +208,9 @@ wazo-setupd:
 wazo-setupd-client:
   python3: true
 
+wazo-stat:
+  python3: true
+
 wazo-ui:
   python3: true
   bind:
@@ -276,11 +279,6 @@ xivo-manage-db:
 xivo-monitoring:
   bind:
     xivo-monitoring-update: /usr/sbin/xivo-monitoring-update
-
-xivo-stat:
-  python2: true
-  bind:
-    bin/xivo-stat: /usr/bin/xivo-stat
 
 xivo-swagger-doc:
   bind:
