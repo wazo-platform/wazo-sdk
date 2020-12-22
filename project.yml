@@ -68,6 +68,11 @@ wazo-auth-keys:
   bind:
     etc/wazo-auth-keys/config.yml: /etc/wazo-auth-keys/config.yml
 
+wazo-debug:
+  python3: true
+  clean:
+    - /usr/local/bin/wazo-debug
+
 wazo-call-logd:
   python3: true
   clean:
