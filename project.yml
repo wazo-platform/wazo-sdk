@@ -230,6 +230,10 @@ wazo-upgrade:
     pre-start.d: /usr/share/wazo-upgrade/pre-start.d
     pre-stop.d: /usr/share/wazo-upgrade/pre-stop.d
     etc/wazo-upgrade/config.yml: /etc/wazo-upgrade/config.yml
+    bin/real-wazo-upgrade: /usr/bin/real-wazo-upgrade
+    bin/wazo-upgrade: /usr/bin/wazo-upgrade
+    bin/wazo-asterisk-custom-modules: /usr/bin/wazo-asterisk-custom-modules
+    bin/wazo-check-conffiles: /usr/bin/wazo-check-conffiles
 
 wazo-webhookd:
   python3: true
