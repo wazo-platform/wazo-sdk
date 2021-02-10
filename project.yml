@@ -142,10 +142,11 @@ wazo-dird-client:
   python3: true
 
 wazo-dxtora:
-  python2: true
+  python3: true
   bind:
-    bin/wazo-dxtora: /usr/bin/wazo-dxtora
     etc/wazo-dxtora/config.yml: /etc/wazo-dxtora/config.yml
+  clean:
+    - /usr/local/bin/wazo-dxtora
 
 wazo-lib-rest-client:
   python2: true
