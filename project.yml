@@ -80,6 +80,7 @@ wazo-call-logd:
     - /usr/local/bin/wazo-call-logd
     - /usr/local/bin/wazo-call-logd-init-db
     - /usr/local/bin/wazo-call-logd-upgrade-db
+    - /usr/local/bin/wazo-call-logd-migrate-db
     - /usr/local/bin/wazo-call-logs
 
 wazo-call-logd-client:
