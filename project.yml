@@ -40,6 +40,7 @@ wazo-asterisk-config:
   bind:
     etc/asterisk/ari.d/01-wazo.conf: /etc/asterisk/ari.d/01-wazo.conf
     etc/asterisk/cel.d/01-wazo.conf: /etc/asterisk/cel.d/01-wazo.conf
+    etc/asterisk/manager.d/99-general.conf: /etc/asterisk/manager.d/99-general.conf
 
 wazo-auth:
   python3: true
