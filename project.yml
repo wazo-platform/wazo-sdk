@@ -123,6 +123,7 @@ wazo-confgend:
   python2: true
   bind:
     etc/wazo-confgend/config.yml: /etc/wazo-confgend/config.yml
+    etc/wazo-confgend/templates: /etc/wazo-confgend/templates
   clean:
     - /usr/local/bin/wazo-confgend
 
