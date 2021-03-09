@@ -204,7 +204,7 @@ wazo-res-amqp:
   clean: []
 
 wazo-service:
-  python2: true
+  python3: true
   bind:
     bin/wazo-service: /usr/bin/wazo-service
   clean:
