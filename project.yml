@@ -270,6 +270,7 @@ xivo-bus:
 xivo-config:
   bind:
     dialplan: /usr/share/xivo-config/dialplan
+    etc/xivo/asterisk/xivo_globals.conf: /etc/xivo/asterisk/xivo_globals.conf
     sbin/xivo-create-config: /usr/sbin/xivo-create-config
     sbin/xivo-read-config: /usr/sbin/xivo-read-config
     sbin/xivo-update-config: /usr/sbin/xivo-update-config
