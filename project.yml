@@ -297,7 +297,7 @@ xivo-swagger-doc:
   bind:
     index.json: /usr/share/xivo-swagger-doc/catalog/index.json
 
-xivo-sysconfd:
+wazo-sysconfd:
   python2: true
 
 xivo-utils:
