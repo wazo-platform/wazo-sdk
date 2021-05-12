@@ -31,9 +31,10 @@ class Config:
 
     @property
     def local_source(self):
-        return os.path.expanduser(
-            self._args.dev_dir or self._file_config.get('local_source')
-        )
+        local_source = self._args.dev_dir or self._file_config.get('local_source')
+        if not local_source:
+            raise Exception("Unable to find local source")
+        return os.path.expanduser(local_source)
 
     @property
     def remote_source(self):
