@@ -84,6 +84,8 @@ wazo-call-logd:
     - /usr/local/bin/wazo-call-logd-upgrade-db
     - /usr/local/bin/wazo-call-logd-migrate-db
     - /usr/local/bin/wazo-call-logs
+  bind:
+    templates: /var/lib/wazo-call-logd/templates
 
 wazo-call-logd-client:
   python2: true
