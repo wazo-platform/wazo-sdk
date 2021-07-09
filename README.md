@@ -51,6 +51,11 @@ cp config.yml.sample ~/.config/wdk/config.yml
 ln -s $(readlink -f project.yml) ~/.config/wdk/project.yml
 ```
 
+#### Using WSL2 (Windows Subsystem for Linux 2)
+
+If using WSL2, please be aware that you should use a filesystem that is in the Linux
+partition used by your utility virtual machine. Otherwise, inotify will not work.
+
 ### On the target machine (Wazo)
 
 ```sh
