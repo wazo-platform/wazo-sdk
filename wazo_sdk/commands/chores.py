@@ -67,62 +67,32 @@ IGNORED = set((
 ))
 
 
-class ChoreList(Command):
+class Chore:
+    name = 'undefined'
 
-    def get_parser(self, *args, **kwargs):
-        parser = super().get_parser(*args, **kwargs)
-        parser.add_argument('--list', action='store_true', help='list chores')
-        parser.add_argument('chore', nargs='?', help='a chore to detail')
-        return parser
+    @classmethod
+    def is_applicable(cls, repo_path):
+        return True
 
-    def take_action(self, parsed_args):
-        if parsed_args.list or parsed_args.chore is None:
-            self.list_chores()
-        elif parsed_args.chore == 'docker':
-            self.list_docker_chore()
-        elif parsed_args.chore == 'authors':
-            self.list_authors_chore()
+    @classmethod
+    def is_dirty(cls, repo_path):
+        return True
 
-    def list_docker_chore(self):
-        for repo_name, repo_path in self.active_repos():
-            if has_dockerfile(repo_path) and needs_split_dockerfile(repo_path):
-                print(repo_name)
+    @classmethod
+    def print_dirty_details(cls, repo_path, repo_name):
+        print(repo_name)
 
-    def list_authors_chore(self):
-        for repo_name, repo_path in self.active_repos():
-            if has_authors_file(repo_path) and not has_wazo_author(repo_path):
-                print(repo_name)
 
-    def list_chores(self):
-        count = 0
-        total = 0
-        for repo_name, repo_path in self.active_repos():
-            if has_dockerfile(repo_path):
-                total += 1
-                if not needs_split_dockerfile(repo_path):
-                    count += 1
-        print('docker:', count, '/', total, 'OK' if count == total else '')
+class DockerChore(Chore):
+    name = 'docker'
 
-        count = 0
-        total = 0
-        for repo_name, repo_path in self.active_repos():
-            if has_authors_file(repo_path):
-                total += 1
-                if not has_wazo_author(repo_path):
-                    count += 1
-        print('authors:', count, '/', total, 'OK' if count == total else '')
+    @classmethod
+    def is_applicable(cls, repo_path):
+        return has_dockerfile(repo_path)
 
-    def active_repos(self):
-        all_repo_names = set(
-            d
-            for d in os.listdir(self.config.local_source)
-            if os.path.isdir(os.path.join(self.config.local_source, d))
-        )
-        active_repos_ = all_repo_names - ARCHIVES - IGNORED
-        for repo_name in active_repos_:
-            repo_path = os.path.join(self.config.local_source, repo_name)
-            yield repo_name, repo_path
-
+    @classmethod
+    def is_dirty(cls, repo_path):
+        return needs_split_dockerfile(repo_path)
 
 def has_dockerfile(repo_path):
     return os.path.isfile(os.path.join(repo_path, 'Dockerfile'))
@@ -146,6 +116,18 @@ def has_requirements_txt(repo_path):
     return subprocess.run(command).returncode == 0
 
 
+class AuthorsChore(Chore):
+    name = 'authors'
+
+    @classmethod
+    def is_applicable(cls, repo_path):
+        return has_authors_file(repo_path)
+
+    @classmethod
+    def is_dirty(cls, repo_path):
+        return not has_wazo_author(repo_path)
+
+
 def has_authors_file(repo_path):
     return os.path.isfile(os.path.join(repo_path, 'AUTHORS'))
 
@@ -153,3 +135,48 @@ def has_authors_file(repo_path):
 def has_wazo_author(repo_path):
     command = ['grep', '--quiet', '--ignore-case', 'Wazo Communication Inc.', os.path.join(repo_path, 'AUTHORS')]
     return subprocess.run(command).returncode == 0
+
+
+class ChoreList(Command):
+
+    def get_parser(self, *args, **kwargs):
+        parser = super().get_parser(*args, **kwargs)
+        parser.add_argument('--list', action='store_true', help='list chores')
+        parser.add_argument('chore', nargs='?', help='a chore to detail')
+        return parser
+
+    def take_action(self, parsed_args):
+        if parsed_args.list or parsed_args.chore is None:
+            self.list_chores()
+        elif parsed_args.chore:
+            chore_name = parsed_args.chore
+            chores = Chore.__subclasses__()
+            chore = next(chore for chore in chores if chore.name == chore_name)
+            self.list_chore_details(chore)
+
+    def list_chore_details(self, chore):
+        for repo_name, repo_path in self.active_repos():
+            if chore.is_applicable(repo_path) and chore.is_dirty(repo_path):
+                chore.print_dirty_details(repo_path, repo_name)
+
+    def list_chores(self):
+        for chore in (DockerChore, AuthorsChore):
+            count = 0
+            total = 0
+            for repo_name, repo_path in self.active_repos():
+                if chore.is_applicable(repo_path):
+                    total += 1
+                    if not chore.is_dirty(repo_path):
+                        count += 1
+            print(f'{chore.name}:', count, '/', total, 'OK' if count == total else '')
+
+    def active_repos(self):
+        all_repo_names = set(
+            d
+            for d in os.listdir(self.config.local_source)
+            if os.path.isdir(os.path.join(self.config.local_source, d))
+        )
+        active_repos_ = all_repo_names - ARCHIVES - IGNORED
+        for repo_name in active_repos_:
+            repo_path = os.path.join(self.config.local_source, repo_name)
+            yield repo_name, repo_path
