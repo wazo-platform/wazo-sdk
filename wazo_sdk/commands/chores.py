@@ -161,14 +161,12 @@ class ChoreList(Command):
 
     def list_chores(self):
         for chore in (DockerChore, AuthorsChore):
-            count = 0
-            total = 0
-            for repo_name, repo_path in self.active_repos():
-                if chore.is_applicable(repo_path):
-                    total += 1
-                    if not chore.is_dirty(repo_path):
-                        count += 1
-            print(f'{chore.name}:', count, '/', total, 'OK' if count == total else '')
+            active_repos = list(repo_path for _, repo_path in self.active_repos())
+            applicable_repo_paths = [repo_path for repo_path in active_repos if chore.is_applicable(repo_path)]
+            clean_repo_paths = [repo_path for repo_path in applicable_repo_paths if not chore.is_dirty(repo_path)]
+            total = len(applicable_repo_paths)
+            clean = len(clean_repo_paths)
+            print(f'{chore.name}:', clean, '/', total, 'OK' if clean == total else '')
 
     def active_repos(self):
         all_repo_names = set(
