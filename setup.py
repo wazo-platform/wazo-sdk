@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from setuptools import setup
@@ -20,6 +20,7 @@ setup(
         ],
         'wazo_sdk.commands': [
             'info = wazo_sdk.commands.info:Info',
+            'chores = wazo_sdk.commands.chores:ChoreList',
             'mount = wazo_sdk.commands.mount:Mount',
             'umount = wazo_sdk.commands.mount:Umount',
             'restart = wazo_sdk.commands.restart:Restart',
