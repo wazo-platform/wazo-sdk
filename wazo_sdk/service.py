@@ -1,11 +1,10 @@
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import sh
 
 
 class ServiceManager:
-
     def __init__(self, logger, config):
         self.logger = logger
         self._config = config

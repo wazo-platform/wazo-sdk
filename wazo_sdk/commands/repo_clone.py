@@ -1,4 +1,4 @@
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
@@ -10,7 +10,6 @@ from github3 import login
 
 
 class RepoClone(Command):
-
     def take_action(self, parsed_args):
         if not self.config.github_orgs:
             self.app.LOG.error('No GitHub organisations configured')

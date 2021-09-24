@@ -1,4 +1,4 @@
-# Copyright 2018-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -11,7 +11,6 @@ REPO_PREFIX = ['', 'wazo-', 'xivo-']
 
 
 class Config:
-
     def __init__(self, args):
         self._args = args
         self._file_config = self._read_config_file()
@@ -19,7 +18,9 @@ class Config:
 
     @property
     def cache_dir(self):
-        return os.path.expanduser(self._file_config.get('cache_dir', _DEFAULT_CACHE_DIR))
+        return os.path.expanduser(
+            self._file_config.get('cache_dir', _DEFAULT_CACHE_DIR)
+        )
 
     @property
     def hostname(self):
