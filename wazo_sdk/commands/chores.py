@@ -147,20 +147,22 @@ class ChoreList(Command):
 
     def take_action(self, parsed_args):
         if parsed_args.list or parsed_args.chore is None:
-            self.list_chores()
+            self.print_chores_stats()
         elif parsed_args.chore:
             chore_name = parsed_args.chore
-            chores = Chore.__subclasses__()
-            chore = next(chore for chore in chores if chore.name == chore_name)
+            chore = next(chore for chore in self.all_chores() if chore.name == chore_name)
             self.list_chore_details(chore)
+
+    def all_chores(self):
+        return Chore.__subclasses__()
 
     def list_chore_details(self, chore):
         for repo_name, repo_path in self.active_repos():
             if chore.is_applicable(repo_path) and chore.is_dirty(repo_path):
                 chore.print_dirty_details(repo_path, repo_name)
 
-    def list_chores(self):
-        for chore in (DockerChore, AuthorsChore):
+    def print_chores_stats(self):
+        for chore in self.all_chores():
             active_repos = list(repo_path for _, repo_path in self.active_repos())
             applicable_repo_paths = [repo_path for repo_path in active_repos if chore.is_applicable(repo_path)]
             clean_repo_paths = [repo_path for repo_path in applicable_repo_paths if not chore.is_dirty(repo_path)]
