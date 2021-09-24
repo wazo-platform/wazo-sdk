@@ -63,6 +63,7 @@ IGNORED = set((
     'wazo-kamailio-config',
     'wazo-router-confd-poc',
     'wazo-unicom',
+    'wazo-nexsis',
 ))
 
 
@@ -79,10 +80,17 @@ class ChoreList(Command):
             self.list_chores()
         elif parsed_args.chore == 'docker':
             self.list_docker_chore()
+        elif parsed_args.chore == 'authors':
+            self.list_authors_chore()
 
     def list_docker_chore(self):
         for repo_name, repo_path in self.active_repos():
             if has_dockerfile(repo_path) and needs_split_dockerfile(repo_path):
+                print(repo_name)
+
+    def list_authors_chore(self):
+        for repo_name, repo_path in self.active_repos():
+            if has_authors_file(repo_path) and not has_wazo_author(repo_path):
                 print(repo_name)
 
     def list_chores(self):
@@ -94,6 +102,15 @@ class ChoreList(Command):
                 if not needs_split_dockerfile(repo_path):
                     count += 1
         print('docker:', count, '/', total, 'OK' if count == total else '')
+
+        count = 0
+        total = 0
+        for repo_name, repo_path in self.active_repos():
+            if has_authors_file(repo_path):
+                total += 1
+                if not has_wazo_author(repo_path):
+                    count += 1
+        print('authors:', count, '/', total, 'OK' if count == total else '')
 
     def active_repos(self):
         all_repo_names = set(
@@ -126,4 +143,13 @@ def has_one_dockerfile_from(repo_path):
 
 def has_requirements_txt(repo_path):
     command = ['grep', '--quiet', '--ignore-case', 'requirements.txt', os.path.join(repo_path, 'Dockerfile')]
+    return subprocess.run(command).returncode == 0
+
+
+def has_authors_file(repo_path):
+    return os.path.isfile(os.path.join(repo_path, 'AUTHORS'))
+
+
+def has_wazo_author(repo_path):
+    command = ['grep', '--quiet', '--ignore-case', 'Wazo Communication Inc.', os.path.join(repo_path, 'AUTHORS')]
     return subprocess.run(command).returncode == 0
