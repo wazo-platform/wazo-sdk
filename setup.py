@@ -20,7 +20,7 @@ setup(
         ],
         'wazo_sdk.commands': [
             'info = wazo_sdk.commands.info:Info',
-            'chores = wazo_sdk.commands.chores:ChoreList',
+            'chores = wazo_sdk.commands.chores_:ChoreList',
             'mount = wazo_sdk.commands.mount:Mount',
             'umount = wazo_sdk.commands.mount:Umount',
             'restart = wazo_sdk.commands.restart:Restart',
