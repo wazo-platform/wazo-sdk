@@ -103,9 +103,17 @@ class DockerChore(Chore):
     def is_dirty(cls, repo_path):
         return needs_split_dockerfile(repo_path)
 
+    @classmethod
+    def print_dirty_details(cls, repo_path, repo_name):
+        print(dockerfile_path(repo_name))
+
+
+def dockerfile_path(repo_path):
+    return os.path.join(repo_path, 'Dockerfile')
+
 
 def has_dockerfile(repo_path):
-    return os.path.isfile(os.path.join(repo_path, 'Dockerfile'))
+    return os.path.isfile(dockerfile_path(repo_path))
 
 
 def needs_split_dockerfile(repo_path):
@@ -119,7 +127,7 @@ def has_one_dockerfile_from(repo_path):
             '--ignore-case',
             '--count',
             '^FROM',
-            os.path.join(repo_path, 'Dockerfile'),
+            dockerfile_path(repo_path),
         ]
         return subprocess.check_output(command).decode('utf-8').strip() == '1'
     except subprocess.CalledProcessError as e:
@@ -134,7 +142,7 @@ def has_requirements_txt(repo_path):
         '--quiet',
         '--ignore-case',
         'requirements.txt',
-        os.path.join(repo_path, 'Dockerfile'),
+        dockerfile_path(repo_path),
     ]
     return subprocess.run(command).returncode == 0
 
@@ -150,9 +158,17 @@ class AuthorsChore(Chore):
     def is_dirty(cls, repo_path):
         return not has_wazo_author(repo_path)
 
+    @classmethod
+    def print_dirty_details(cls, repo_path, repo_name):
+        print(authors_path(repo_name))
+
+
+def authors_path(repo_path):
+    return os.path.join(repo_path, 'AUTHORS')
+
 
 def has_authors_file(repo_path):
-    return os.path.isfile(os.path.join(repo_path, 'AUTHORS'))
+    return os.path.isfile(authors_path(repo_path))
 
 
 def has_wazo_author(repo_path):
@@ -161,7 +177,7 @@ def has_wazo_author(repo_path):
         '--quiet',
         '--ignore-case',
         'Wazo Communication Inc.',
-        os.path.join(repo_path, 'AUTHORS'),
+        authors_path(repo_path),
     ]
     return subprocess.run(command).returncode == 0
 
