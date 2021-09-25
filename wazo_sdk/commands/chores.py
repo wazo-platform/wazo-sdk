@@ -87,6 +87,11 @@ class Chore:
         print(repo_name)
 
 
+class NoSuchChore(ValueError):
+    def __init__(self, name):
+        self.chore_name = name
+
+
 class DockerChore(Chore):
     name = 'docker'
 
@@ -173,13 +178,23 @@ class ChoreList(Command):
             self.print_chores_stats()
         elif parsed_args.chore:
             chore_name = parsed_args.chore
-            chore = next(
-                chore for chore in self.all_chores() if chore.name == chore_name
-            )
+            try:
+                chore = self.get_chore(chore_name)
+            except NoSuchChore as e:
+                print(f'Chore not found: {e.chore_name}')
+                return
+
             self.list_chore_details(chore)
 
     def all_chores(self):
         return Chore.__subclasses__()
+
+    def get_chore(self, name):
+        candidate_chores = (chore for chore in self.all_chores() if chore.name == name)
+        try:
+            return next(candidate_chores)
+        except StopIteration:
+            raise NoSuchChore(name)
 
     def list_chore_details(self, chore):
         for repo_name, repo_path in self.active_repos():
