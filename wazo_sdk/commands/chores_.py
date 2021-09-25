@@ -8,8 +8,8 @@ from cliff.command import Command
 from .chores.chore import Chore
 
 # Those classes need to be imported to be listed
-from .chores.docker import DockerChore
-from .chores.authors import AuthorsChore
+from .chores.docker import DockerChore  # noqa
+from .chores.authors import AuthorsChore  # noqa
 
 
 ARCHIVES = set(
