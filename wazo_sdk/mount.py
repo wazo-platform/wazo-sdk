@@ -1,4 +1,4 @@
-# Copyright 2018-2020 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import psutil
@@ -10,7 +10,8 @@ import tempfile
 from jinja2 import Template
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
-LSYNC_CONFIG_TEMPLATE = Template('''\
+LSYNC_CONFIG_TEMPLATE = Template(
+    '''\
 sync {
     default.rsync,
     delay = 1,
@@ -23,15 +24,29 @@ sync {
         perms = true
     }
 }
-''')
+'''
+)
 
-RSYNC_OPTIONS = ['--xattrs', '--archive', '--perms', '--delete', "--exclude={'.git','.tox','node_modules'}"]
+RSYNC_OPTIONS = [
+    '--xattrs',
+    '--archive',
+    '--perms',
+    '--delete',
+    "--exclude={'.git','.tox','node_modules'}",
+]
 
 
 def _list_processes():
     for pid in psutil.pids():
         try:
-            with open(os.path.join('/proc', str(pid), 'cmdline', ), 'r') as f:
+            with open(
+                os.path.join(
+                    '/proc',
+                    str(pid),
+                    'cmdline',
+                ),
+                'r',
+            ) as f:
                 yield pid, f.read()[:-1]
         except IOError:
             # Process already completed
@@ -39,7 +54,6 @@ def _list_processes():
 
 
 class Mounter:
-
     def __init__(self, logger, config, state):
         self.logger = logger
         self._config = config
@@ -89,7 +103,9 @@ class Mounter:
             raise Exception('The remote hostname is required to mount directories')
 
         if not self._local_dir:
-            raise Exception('The local source directory is required to mount directories')
+            raise Exception(
+                'The local source directory is required to mount directories'
+            )
 
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
@@ -105,7 +121,9 @@ class Mounter:
 
     def umount(self, repo_name):
         if not self._local_dir:
-            raise Exception('The local source directory is required to mount directories')
+            raise Exception(
+                'The local source directory is required to mount directories'
+            )
 
         real_repo_name = self._config.get_project_name(repo_name)
 
@@ -219,15 +237,23 @@ class Mounter:
         remote_path = os.path.join(self._remote_dir, real_repo_name)
 
         if self._config.rsync_only:
-            sync_command = ['rsync', *RSYNC_OPTIONS, local_path+'/', self._hostname+":"+remote_path+'/']
+            sync_command = [
+                'rsync',
+                *RSYNC_OPTIONS,
+                local_path + '/',
+                self._hostname + ":" + remote_path + '/',
+            ]
             config_filename = None
             pid_filename = None
             communicate_kwargs = {}
         else:
             config = LSYNC_CONFIG_TEMPLATE.render(
-                source=local_path, host=self._hostname, destination=remote_path)
+                source=local_path, host=self._hostname, destination=remote_path
+            )
 
-            with tempfile.NamedTemporaryFile(mode='w', dir=self._config.cache_dir, delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode='w', dir=self._config.cache_dir, delete=False
+            ) as f:
                 config_filename = f.name
                 f.write(config)
 
@@ -247,7 +273,9 @@ class Mounter:
             self.logger.info('%s failed %s', ' '.join(sync_command), 'timeout')
             return
 
-        self._state.add_mount(self._hostname, real_repo_name, config_filename, pid_filename)
+        self._state.add_mount(
+            self._hostname, real_repo_name, config_filename, pid_filename
+        )
 
     def _stop_sync(self, repo_name):
         if self._config.rsync_only:

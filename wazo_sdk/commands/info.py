@@ -1,11 +1,10 @@
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from cliff.command import Command
 
 
 class Info(Command):
-
     def take_action(self, parsed_args):
         print('hostname: {}'.format(self.service._config.hostname))
         print('project_file: {}'.format(self.service._config.project_file))

@@ -1,11 +1,10 @@
-# Copyright 2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import json
 
 
 class State:
-
     def __init__(self, data=None):
         self._data = data or {'hosts': {}}
 

@@ -1,7 +1,6 @@
-# Copyright 2017-2018 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
-import json
 import os
 import sys
 import pathlib
@@ -19,7 +18,6 @@ _DEFAULT_CONFIG_FILENAME = os.getenv('WDK_CONFIG_FILE', _DEFAULT_CONFIG_FILENAME
 
 
 class WDK(App):
-
     def __init__(self):
         super().__init__(
             description='Wazo SDK',
@@ -29,12 +27,19 @@ class WDK(App):
 
     def build_option_parser(self, *args, **kwargs):
         parser = super().build_option_parser(*args, **kwargs)
-        parser.add_argument('--config', default=_DEFAULT_CONFIG_FILENAME,
-                            help='Configuration file name')
-        parser.add_argument('--project-file', help='Project configuration file', default=None)
+        parser.add_argument(
+            '--config', default=_DEFAULT_CONFIG_FILENAME, help='Configuration file name'
+        )
+        parser.add_argument(
+            '--project-file', help='Project configuration file', default=None
+        )
         parser.add_argument('--hostname', help='The remote host when Wazo is installed')
         parser.add_argument('--dev-dir', help='Where the local source code is')
-        parser.add_argument('--rsync-only', action='store_true', help='Use rsync only to mount/unmount respositories')
+        parser.add_argument(
+            '--rsync-only',
+            action='store_true',
+            help='Use rsync only to mount/unmount respositories',
+        )
 
         return parser
 

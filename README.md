@@ -141,6 +141,18 @@ wdk repo clone
 wdk tailf <project>
 ```
 
+## Listing chores and progress
+
+```sh
+wdk chores [--list]
+```
+
+## Listing details for a chore
+
+```sh
+wdk chores <chore>
+```
+
 ## Troubleshooting
 
 ### Common causes
