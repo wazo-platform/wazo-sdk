@@ -65,6 +65,8 @@ class Mounter:
     def list_(self):
         mounts = self._state.get_mounts(self._hostname)
         for mount in list(mounts.values()):
+            if not mount:
+                continue
             yield mount['project'], self._is_sync_running(mount)
 
     def _is_sync_running(self, mount):
