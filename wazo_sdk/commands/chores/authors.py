@@ -1,4 +1,4 @@
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .chore import Chore
@@ -9,6 +9,10 @@ import subprocess
 
 class AuthorsChore(Chore):
     name = 'authors'
+
+    @classmethod
+    def print_expectations(cls):
+        print('- AUTHORS file includes Wazo Communication Inc.')
 
     @classmethod
     def is_applicable(cls, repo_path):
