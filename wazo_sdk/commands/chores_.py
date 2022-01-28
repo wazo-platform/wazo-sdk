@@ -1,4 +1,4 @@
-# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import os
@@ -8,8 +8,9 @@ from cliff.command import Command
 from .chores.chore import Chore
 
 # Those classes need to be imported to be listed
-from .chores.docker import DockerChore  # noqa
 from .chores.authors import AuthorsChore  # noqa
+from .chores.docker import DockerChore  # noqa
+from .chores.mypy import MypyChore  # noqa
 
 
 ARCHIVES = set(
@@ -113,6 +114,11 @@ class ChoreList(Command):
             raise NoSuchChore(name)
 
     def list_chore_details(self, chore):
+        print('Expectations:')
+        chore.print_expectations()
+        print()
+        print('Repo/files not meeting expectations:')
+        print()
         for repo_name, repo_path in self.active_repos():
             if chore.is_applicable(repo_path) and chore.is_dirty(repo_path):
                 chore.print_dirty_details(repo_path, repo_name)

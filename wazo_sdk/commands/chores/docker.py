@@ -1,4 +1,4 @@
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
@@ -9,6 +9,10 @@ from .chore import Chore
 
 class DockerChore(Chore):
     name = 'docker'
+
+    @classmethod
+    def print_expectations(cls):
+        print('- Dockerfile does not include build-only files in final image')
 
     @classmethod
     def is_applicable(cls, repo_path):

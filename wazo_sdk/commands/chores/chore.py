@@ -1,9 +1,13 @@
-# Copyright 2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
 class Chore:
     name = 'undefined'
+
+    @classmethod
+    def print_expectations(cls):
+        print('Undefined expectations')
 
     @classmethod
     def is_applicable(cls, repo_path):
