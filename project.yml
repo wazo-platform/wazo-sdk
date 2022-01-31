@@ -118,6 +118,11 @@ wazo-confd:
     - /usr/local/bin/wazo-confd
     - /usr/local/bin/wazo-confd-sync-db
 
+wazo-confd-cli:
+  python3: true
+  clean:
+    - /usr/local/bin/wazo-confd-cli
+
 wazo-confd-client:
   python2: true
   python3: true
