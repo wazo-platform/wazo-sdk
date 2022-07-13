@@ -68,7 +68,7 @@ wazo-auth-keys:
     - /usr/local/bin/wazo-auth-keys
   bind:
     etc/wazo-auth-keys/config.yml: /etc/wazo-auth-keys/config.yml
-    etc/wazo-auth/conf.d/50-wazo-default-policies.yml: /etc/wazo-auth/conf.d/50-wazo-default-policies.yml
+    etc/wazo-auth/conf.d/50-wazo-default.yml: /etc/wazo-auth/conf.d/50-wazo-default.yml
 
 wazo-debug:
   python3: true
