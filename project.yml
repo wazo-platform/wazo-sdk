@@ -18,11 +18,10 @@ wazo-agentd-cli:
     - /usr/local/bin/wazo-agentd-cli
 
 wazo-agentd-client:
-  python2: true
   python3: true
 
 wazo-agid:
-  python2: true
+  python3: true
   bind:
     etc/wazo-agid/config.yml: /etc/wazo-agid/config.yml
     bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
@@ -59,7 +58,6 @@ wazo-auth-cli:
     - /usr/local/bin/wazo-auth-cli
 
 wazo-auth-client:
-  python2: true
   python3: true
 
 wazo-auth-keys:
@@ -87,7 +85,6 @@ wazo-call-logd:
     templates: /var/lib/wazo-call-logd/templates
 
 wazo-call-logd-client:
-  python2: true
   python3: true
 
 wazo-calld:
@@ -98,7 +95,6 @@ wazo-calld:
     - /usr/local/bin/wazo-calld
 
 wazo-calld-client:
-  python2: true
   python3: true
 
 wazo-chatd:
@@ -124,11 +120,10 @@ wazo-confd-cli:
     - /usr/local/bin/wazo-confd-cli
 
 wazo-confd-client:
-  python2: true
   python3: true
 
 wazo-confgend:
-  python2: true
+  python3: true
   bind:
     etc/wazo-confgend/config.yml: /etc/wazo-confgend/config.yml
     etc/wazo-confgend/templates: /etc/wazo-confgend/templates
@@ -148,7 +143,6 @@ wazo-dird:
     - /usr/local/bin/wazo-dird
 
 wazo-dird-client:
-  python2: true
   python3: true
 
 wazo-dxtora:
@@ -162,7 +156,6 @@ wazo-export-import:
   python3: true
 
 wazo-lib-rest-client:
-  python2: true
   python3: true
 
 wazo-libsccp:
@@ -195,19 +188,18 @@ wazo-purge-db:
     - /usr/local/bin/wazo-purge-db
 
 wazo-provd:
-  python2: true
+  python3: true
   bind:
     etc/wazo-provd: /etc/wazo-provd
   log_filename: /var/log/wazo-provd.log
   service: wazo-provd
 
 wazo-provd-cli:
-  python2: true
+  python3: true
   clean:
     - /usr/local/bin/wazo-provd-cli
 
 wazo-provd-client:
-  python2: true
   python3: true
 
 wazo-res-amqp:
@@ -263,7 +255,6 @@ wazo-webhookd:
     - /usr/local/bin/wazo-webhookd-init-db
 
 wazo-webhookd-client:
-  python2: true
   python3: true
 
 wazo-websocketd:
@@ -274,7 +265,6 @@ wazo-websocketd:
     - /usr/local/bin/wazo-websocketd
 
 xivo-bus:
-  python2: true
   python3: true
 
 xivo-config:
@@ -289,11 +279,9 @@ xivo-config:
     templates: /usr/share/xivo-config/templates
 
 xivo-dao:
-  python2: true
   python3: true
 
 xivo-lib-python:
-  python2: true
   python3: true
 
 xivo-manage-db:

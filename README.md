@@ -5,7 +5,7 @@ Developer tool kit for Wazo development
 ## Installation
 
 `wdk` depends on lsyncd. It can be installed on a Debian or Ubuntu with the following
-commands. If you running on macOS, lsyncd won't work, so you must set `rsync_only` option to `true`.
+commands. If you're running macOS, lsyncd won't work, so you must set the `rsync_only` option to `true`.
 
 ### Installing WDK
 
@@ -82,7 +82,6 @@ The project file has the following structure
 
 ```yml
 <project name>:
-  python2: true
   python3: true
   binds:
     <source>: <destination>
