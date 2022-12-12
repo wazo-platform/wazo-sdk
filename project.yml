@@ -22,7 +22,7 @@ wazo-agentd-client:
   python3: true
 
 wazo-agid:
-  python2: true
+  python3: true
   bind:
     etc/wazo-agid/config.yml: /etc/wazo-agid/config.yml
     bin/change-pass-vm: /usr/share/asterisk/bin/change-pass-vm
@@ -128,7 +128,7 @@ wazo-confd-client:
   python3: true
 
 wazo-confgend:
-  python2: true
+  python3: true
   bind:
     etc/wazo-confgend/config.yml: /etc/wazo-confgend/config.yml
     etc/wazo-confgend/templates: /etc/wazo-confgend/templates
@@ -195,14 +195,14 @@ wazo-purge-db:
     - /usr/local/bin/wazo-purge-db
 
 wazo-provd:
-  python2: true
+  python3: true
   bind:
     etc/wazo-provd: /etc/wazo-provd
   log_filename: /var/log/wazo-provd.log
   service: wazo-provd
 
 wazo-provd-cli:
-  python2: true
+  python3: true
   clean:
     - /usr/local/bin/wazo-provd-cli
 
