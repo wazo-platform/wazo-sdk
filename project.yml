@@ -307,6 +307,10 @@ wazo-sysconfd:
   clean:
     - /usr/local/bin/wazo-sysconfd
 
+xivo-sync:
+  bind:
+    bin/xivo-sync: /usr/bin/xivo-sync
+
 xivo-utils:
   bind:
     sbin/wazo-reset: /usr/sbin/wazo-reset
