@@ -113,6 +113,7 @@ wazo-confd:
   clean:
     - /usr/local/bin/wazo-confd
     - /usr/local/bin/wazo-confd-sync-db
+    - /usr/local/bin/wazo-confd-purge-meetings
 
 wazo-confd-cli:
   python3: true
@@ -303,6 +304,8 @@ xivo-swagger-doc:
 
 wazo-sysconfd:
   python3: true
+  clean:
+    - /usr/local/bin/wazo-sysconfd
 
 xivo-utils:
   bind:
