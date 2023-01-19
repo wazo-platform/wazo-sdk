@@ -266,7 +266,6 @@ wazo-websocketd:
     - /usr/local/bin/wazo-websocketd
 
 xivo-bus:
-  python2: true
   python3: true
 
 xivo-config:
@@ -281,11 +280,9 @@ xivo-config:
     templates: /usr/share/xivo-config/templates
 
 xivo-dao:
-  python2: true
   python3: true
 
 xivo-lib-python:
-  python2: true
   python3: true
 
 xivo-manage-db:
