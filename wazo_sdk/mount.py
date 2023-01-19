@@ -1,4 +1,4 @@
-# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 import psutil
@@ -142,9 +142,6 @@ class Mounter:
             return
 
         wazo = sh.ssh.bake(self._hostname)
-
-        if config.get('python2'):
-            self._mount_python2(wazo, repo_name)
         if config.get('python3'):
             self._mount_python3(wazo, repo_name)
         binds = config.get('bind')
@@ -156,9 +153,6 @@ class Mounter:
             return
 
         wazo = sh.ssh.bake(self._hostname)
-
-        if config.get('python2'):
-            self._umount_python2(wazo, repo_name)
         if config.get('python3'):
             self._umount_python3(wazo, repo_name)
         binds = config.get('bind')
@@ -205,25 +199,12 @@ class Mounter:
             cmd = ['umount', dest]
             self.logger.debug(ssh(' '.join(cmd)))
 
-    def _mount_python2(self, ssh, repo_name):
-        setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
-        self._wait_for_file(ssh, setup_path)
-
-        repo_dir = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', repo_dir, ';', 'python2', 'setup.py', 'develop']
-        self.logger.debug(ssh(' '.join(cmd)))
-
     def _mount_python3(self, ssh, repo_name):
         setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
         self._wait_for_file(ssh, setup_path)
 
         repo_dir = os.path.join(self._remote_dir, repo_name)
         cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop']
-        self.logger.debug(ssh(' '.join(cmd)))
-
-    def _umount_python2(self, ssh, repo_name):
-        repo_dir = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', repo_dir, ';', 'python2', 'setup.py', 'develop', '--uninstall']
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _umount_python3(self, ssh, repo_name):
