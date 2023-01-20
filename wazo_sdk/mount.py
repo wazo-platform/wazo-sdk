@@ -1,5 +1,6 @@
 # Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from logging import Logger
 
 import psutil
 import os
@@ -8,6 +9,9 @@ import signal
 import subprocess
 import tempfile
 from jinja2 import Template
+
+from wazo_sdk.config import Config
+from wazo_sdk.state import State
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
 LSYNC_CONFIG_TEMPLATE = Template(
@@ -54,7 +58,7 @@ def _list_processes():
 
 
 class Mounter:
-    def __init__(self, logger, config, state):
+    def __init__(self, logger: Logger, config: Config, state: State) -> None:
         self.logger = logger
         self._config = config
         self._hostname = config.hostname
@@ -181,7 +185,7 @@ class Mounter:
             self.logger.debug(ssh(' '.join(cmd)))
 
     def _clean_files(self, ssh, files):
-        ssh('rm -rf {}'.format(' '.join(files)))
+        ssh(f'rm -rf {" ".join(files)}')
 
     def _remove_bind_files(self, ssh, repo_name, binds):
         mount_output = ssh('mount').strip().split('\n')
@@ -213,9 +217,9 @@ class Mounter:
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _wait_for_file(self, ssh, filename):
-        ssh('while [ ! -e {} ]; do sleep 0.2; done'.format(filename))
+        ssh(f'while [ ! -e {filename} ]; do sleep 0.2; done')
 
-    def _start_sync(self, local_repo_name, real_repo_name):
+    def _start_sync(self, local_repo_name: str, real_repo_name: str) -> None:
         local_path = os.path.join(self._local_dir, local_repo_name)
         remote_path = os.path.join(self._remote_dir, real_repo_name)
 
@@ -223,8 +227,8 @@ class Mounter:
             sync_command = [
                 'rsync',
                 *RSYNC_OPTIONS,
-                local_path + '/',
-                self._hostname + ":" + remote_path + '/',
+                f'{local_path}/',
+                f'{self._hostname}:{remote_path}/',
             ]
             config_filename = None
             pid_filename = None
@@ -240,7 +244,7 @@ class Mounter:
                 config_filename = f.name
                 f.write(config)
 
-            pid_filename = '{}.pid'.format(config_filename)
+            pid_filename = f'{config_filename}.pid'
             sync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
             communicate_kwargs = {'timeout': 1}
 
@@ -288,9 +292,9 @@ class Mounter:
 
     def _find_local_repo_name(self, repo_name):
         for prefix in REPO_PREFIX:
-            basename = '{}{}'.format(prefix, repo_name)
+            basename = f'{prefix}{repo_name}'
             path = os.path.join(self._local_dir, basename)
             if os.path.exists(path):
                 return basename
 
-        raise Exception('No such repo {}'.format(repo_name))
+        raise Exception(f'No such repo {repo_name}')

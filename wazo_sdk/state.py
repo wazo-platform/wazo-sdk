@@ -1,11 +1,13 @@
-# Copyright 2018-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
 
 import json
+from typing import Any
 
 
 class State:
-    def __init__(self, data=None):
+    def __init__(self, data: dict[str, Any] | None = None):
         self._data = data or {'hosts': {}}
 
     def add_mount(self, host, repo, config, pid):

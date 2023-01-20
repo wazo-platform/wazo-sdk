@@ -133,6 +133,24 @@ wdk repo clone
 
 `wdk` will ask for your login/password and clone every repo of the GitHub orgs listed in the config.
 
+If you also wish to include archived repos add the `--include-archived` (or `-a`) option.
+
+```sh
+wdk repo clone --include-archived
+```
+
+## Remove local repos that have been archived
+
+```sh
+wdk repo rm archived
+```
+
+To see which repos will be deleted you can first run with the option `--dry-run` (or `-d`)
+
+```sh
+wdk repo rm archived --dry-run
+```
+
 ## Tailing a log files
 
 ```sh
@@ -155,12 +173,12 @@ wdk chores <chore>
 
 ### Common causes
 
-Make sure:
+Make sure you have:
 
-* you have created your `<remote_source>` (`/usr/src/wazo` by default)
-* you have installed rsync on your target marchine
+* created your `<remote_source>` (`/usr/src/wazo` by default)
+* installed rsync on your target machine
 
-### Increase verbosity of errors
+### Increase the verbosity of errors
 
 ```sh
 wdk -vvv <command>
