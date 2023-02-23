@@ -151,6 +151,12 @@ To see which repos will be deleted you can first run with the option `--dry-run`
 wdk repo rm archived --dry-run
 ```
 
+If you wish to exclude one or more repos from removal you can use the option `--exclude` (or `-e`)
+
+```sh
+wdk repo rm archived --exclude nestbox-ui wazo-nexsis
+```
+
 ## Tailing a log files
 
 ```sh

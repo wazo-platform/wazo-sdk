@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
-import os
 from argparse import Namespace, ArgumentParser
+import os
 from typing import Any
 
 from git import Repo
@@ -25,17 +25,13 @@ class RepoClone(BaseRepoCommand):
         return parser
 
     def take_action(self, parsed_args: Namespace) -> None:
-        github = self.login()
-        if not github:
-            return
-        for org_name in self.config.github_orgs:
-            for repo in github.organization(org_name).repositories():
-                if repo.archived and not parsed_args.include_archived:
-                    self.app.LOG.info('Skipping archived repo %s...', repo.name)
-                    continue
-                self.app.LOG.info('Cloning %s...', repo.name)
-                dest_dir = os.path.join(self.config.local_source, repo.name)
-                if os.path.isdir(dest_dir):
-                    self.app.LOG.info('Directory %s already exists.', repo.name)
-                    continue
-                Repo.clone_from(repo.ssh_url, to_path=dest_dir)
+        for repo in self.iter_all_repositories():
+            if repo.archived and not parsed_args.include_archived:
+                self.app.LOG.info('Skipping archived repo %s...', repo.name)
+                continue
+            self.app.LOG.info('Cloning %s...', repo.name)
+            dest_dir = os.path.join(self.config.local_source, repo.name)
+            if os.path.isdir(dest_dir):
+                self.app.LOG.info('Directory %s already exists.', repo.name)
+                continue
+            Repo.clone_from(repo.ssh_url, to_path=dest_dir)
