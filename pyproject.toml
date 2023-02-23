@@ -1,0 +1,28 @@
+[tool.mypy]
+python_version = "3.10"
+show_error_codes = true
+check_untyped_defs = true
+warn_unused_configs = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+warn_unused_ignores = true
+strict_equality = true
+strict_concatenate = true
+no_warn_no_return = true
+
+[tool.black]
+skip-string-normalization = true
+
+[tool.flake8]
+show-source = true
+max-line-length = 99
+application-import-names = "wazo_dsk"
+ignore = [
+  "E203", # whitespace before ':'
+  "W503", # line break before binary operator
+]
+exclude = [
+    ".tox",
+    ".eggs",
+]

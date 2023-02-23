@@ -1,3 +1,3 @@
 - project:
     templates:
-      - wazo-tox-linters
+      - wazo-tox-linters-310

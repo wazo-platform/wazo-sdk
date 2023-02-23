@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import yaml
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from argparse import Namespace
 
 
@@ -13,6 +13,29 @@ _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
+
+
+if TYPE_CHECKING:
+    from typing import TypedDict
+
+    class ConfigData(TypedDict):
+        hostname: str
+        local_source: str
+        remote_source: str
+        project_file: str
+        cache_dir: str
+        rsync_only: bool
+        github_username: str | None
+        github_token: str | None
+        github_orgs: list[str]
+
+    class ProjectConfigData(TypedDict):
+        python2: bool
+        python3: bool
+        log_filename: str | None
+        service: str | None
+        clean: list[str]
+        bind: dict[str, str]
 
 
 class Config:
@@ -61,7 +84,7 @@ class Config:
 
     @property
     def github_orgs(self) -> list[str]:
-        return self._file_config.get('github_orgs')
+        return self._file_config.get('github_orgs') or []
 
     @property
     def github_token(self) -> str | None:
@@ -71,7 +94,7 @@ class Config:
     def github_username(self) -> str | None:
         return self._file_config.get('github_username')
 
-    def get_project(self, short_name: str) -> dict[str, Any]:
+    def get_project(self, short_name: str) -> ProjectConfigData:
         name = self.get_project_name(short_name)
         return self._project_config[name]
 
@@ -83,11 +106,11 @@ class Config:
 
         raise Exception(f'No such project {short_name}')
 
-    def _read_config_file(self) -> dict[str, Any]:
+    def _read_config_file(self) -> ConfigData:
         filename = os.path.expanduser(self._args.config)
-        return self._read_yml_file(filename)
+        return self._read_yml_file(filename)  # type: ignore
 
-    def _read_project_file(self) -> dict[str, Any]:
+    def _read_project_file(self) -> dict[str, ProjectConfigData]:
         return self._read_yml_file(self.project_file)
 
     def _read_yml_file(self, filename: str) -> dict[str, Any]:

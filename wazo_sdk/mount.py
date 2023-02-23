@@ -1,6 +1,9 @@
 # Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
+
 from logging import Logger
+from typing import Generator, TYPE_CHECKING, Any
 
 import psutil
 import os
@@ -12,6 +15,11 @@ from jinja2 import Template
 
 from wazo_sdk.config import Config
 from wazo_sdk.state import State
+
+if TYPE_CHECKING:
+    from wazo_sdk.state import MountData
+    from wazo_sdk.config import ProjectConfigData
+
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
 LSYNC_CONFIG_TEMPLATE = Template(
@@ -40,7 +48,7 @@ RSYNC_OPTIONS = [
 ]
 
 
-def _list_processes():
+def _list_processes() -> Generator[tuple[int, str], None, None]:
     for pid in psutil.pids():
         try:
             with open(
@@ -61,23 +69,23 @@ class Mounter:
     def __init__(self, logger: Logger, config: Config, state: State) -> None:
         self.logger = logger
         self._config = config
-        self._hostname = config.hostname
-        self._local_dir = config.local_source
-        self._remote_dir = config.remote_source
+        self._hostname: str = config.hostname  # type: ignore
+        self._local_dir: str = config.local_source
+        self._remote_dir: str = config.remote_source  # type: ignore
         self._state = state
 
-    def list_(self):
+    def list_(self) -> Generator[tuple[str, bool], None, None]:
         mounts = self._state.get_mounts(self._hostname)
-        for mount in list(mounts.values()):
+        for mount in mounts.values():
             if not mount:
                 continue
             yield mount['project'], self._is_sync_running(mount)
 
-    def _is_sync_running(self, mount):
+    def _is_sync_running(self, mount: MountData) -> bool:
         if self._config.rsync_only:
             return True
 
-        pid_filename = mount['lsync_pidfile']
+        pid_filename: str = mount['lsync_pidfile']  # type: ignore
         try:
             with open(pid_filename, 'r') as f:
                 pid = int(f.read())
@@ -94,17 +102,16 @@ class Mounter:
         except OSError:
             return False
 
-    def _is_mounted(self, repo_name):
+    def _is_mounted(self, repo_name: str) -> bool:
         return self._state.is_mounted(self._hostname, repo_name)
 
-    def _is_mounted_and_running(self, repo_name):
+    def _is_mounted_and_running(self, repo_name: str) -> bool:
         mount = self._state.get_mount(self._hostname, repo_name)
         if not mount:
             return False
-
         return self._is_sync_running(mount)
 
-    def mount(self, repo_name):
+    def mount(self, repo_name: str) -> None:
         if not self._hostname:
             raise Exception('The remote hostname is required to mount directories')
 
@@ -116,7 +123,8 @@ class Mounter:
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
 
-        # Skip this condition if we are in rsync only mode, because files a not synced automatically
+        # Skip this condition if we are in rsync only mode,
+        # because files a not synced automatically
         if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
@@ -125,7 +133,7 @@ class Mounter:
         repo_config = self._config.get_project(real_repo_name)
         self._apply_mount(real_repo_name, repo_config)
 
-    def umount(self, repo_name):
+    def umount(self, repo_name: str) -> None:
         if not self._local_dir:
             raise Exception(
                 'The local source directory is required to mount directories'
@@ -141,7 +149,7 @@ class Mounter:
         else:
             self._stop_sync(real_repo_name)
 
-    def _apply_mount(self, repo_name, config):
+    def _apply_mount(self, repo_name: str, config: ProjectConfigData) -> None:
         if not config:
             return
 
@@ -152,7 +160,7 @@ class Mounter:
         if binds:
             self._bind_files(wazo, repo_name, binds)
 
-    def _unapply_mount(self, repo_name, config):
+    def _unapply_mount(self, repo_name: str, config: ProjectConfigData) -> None:
         if not config:
             return
 
@@ -166,9 +174,11 @@ class Mounter:
         if clean:
             self._clean_files(wazo, clean)
 
-    def _bind_files(self, ssh, repo_name, binds):
+    def _bind_files(
+        self, ssh: sh.Command, repo_name: str, binds: dict[str, str]
+    ) -> None:
         mount_output = ssh('mount').strip().split('\n')
-        mounted = []
+        mounted: list[str] = []
         for line in mount_output:
             cols = line.split(' ')
             mounted.append(cols[2])
@@ -184,10 +194,12 @@ class Mounter:
             cmd = ['mount', '--bind', src_path, dest]
             self.logger.debug(ssh(' '.join(cmd)))
 
-    def _clean_files(self, ssh, files):
+    def _clean_files(self, ssh: sh.Command, files: list[str]) -> None:
         ssh(f'rm -rf {" ".join(files)}')
 
-    def _remove_bind_files(self, ssh, repo_name, binds):
+    def _remove_bind_files(
+        self, ssh: sh.Command, repo_name: str, binds: dict[str, str]
+    ) -> None:
         mount_output = ssh('mount').strip().split('\n')
         mounted = []
         for line in mount_output:
@@ -203,7 +215,7 @@ class Mounter:
             cmd = ['umount', dest]
             self.logger.debug(ssh(' '.join(cmd)))
 
-    def _mount_python3(self, ssh, repo_name):
+    def _mount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
         self._wait_for_file(ssh, setup_path)
 
@@ -211,17 +223,20 @@ class Mounter:
         cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop']
         self.logger.debug(ssh(' '.join(cmd)))
 
-    def _umount_python3(self, ssh, repo_name):
+    def _umount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         repo_dir = os.path.join(self._remote_dir, repo_name)
         cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop', '--uninstall']
         self.logger.debug(ssh(' '.join(cmd)))
 
-    def _wait_for_file(self, ssh, filename):
+    def _wait_for_file(self, ssh: sh.Command, filename: str) -> None:
         ssh(f'while [ ! -e {filename} ]; do sleep 0.2; done')
 
     def _start_sync(self, local_repo_name: str, real_repo_name: str) -> None:
         local_path = os.path.join(self._local_dir, local_repo_name)
         remote_path = os.path.join(self._remote_dir, real_repo_name)
+        config_filename: str | None = None
+        pid_filename: str | None = None
+        communicate_kwargs: dict[str, Any] = {}
 
         if self._config.rsync_only:
             sync_command = [
@@ -230,9 +245,6 @@ class Mounter:
                 f'{local_path}/',
                 f'{self._hostname}:{remote_path}/',
             ]
-            config_filename = None
-            pid_filename = None
-            communicate_kwargs = {}
         else:
             config = LSYNC_CONFIG_TEMPLATE.render(
                 source=local_path, host=self._hostname, destination=remote_path
@@ -264,7 +276,7 @@ class Mounter:
             self._hostname, real_repo_name, config_filename, pid_filename
         )
 
-    def _stop_sync(self, repo_name):
+    def _stop_sync(self, repo_name: str) -> None:
         if self._config.rsync_only:
             return
 
@@ -273,7 +285,7 @@ class Mounter:
             self.logger.error('failed to find a matching mount to stop')
             return
 
-        pid_filename = mount['lsync_pidfile']
+        pid_filename: str = mount['lsync_pidfile']  # type: ignore
         pid = None
 
         try:
@@ -290,7 +302,7 @@ class Mounter:
 
         self._state.remove_mount(self._hostname, repo_name)
 
-    def _find_local_repo_name(self, repo_name):
+    def _find_local_repo_name(self, repo_name: str) -> str:
         for prefix in REPO_PREFIX:
             basename = f'{prefix}{repo_name}'
             path = os.path.join(self._local_dir, basename)

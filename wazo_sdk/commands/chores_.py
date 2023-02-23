@@ -118,7 +118,7 @@ class ChoreList(Command):
         except StopIteration:
             raise NoSuchChore(name)
 
-    def list_chore_details(self, chore: Chore) -> None:
+    def list_chore_details(self, chore: type[Chore]) -> None:
         print('Expectations:')
         chore.print_expectations()
         print()
