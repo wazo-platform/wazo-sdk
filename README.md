@@ -91,8 +91,7 @@ The project file has the following structure
 ```
 
 * project name: This is the name that matches your local source directory. ex: `wazo-auth`
-* python2: If this project is a python2 project. This will do a `python2 setup.py develop`
-* python3: Same as python2 but for python3 project. This will do a `python3 setup.py develop`
+* python3: This will do a `python3 setup.py develop` when this project is mounted.
 * binds: This is a map of source and destination file/directory that should be overridden.
 * clean: A list of files to delete when unmounting the project.
 
