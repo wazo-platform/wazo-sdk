@@ -1,7 +1,10 @@
-# Copyright 2018-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+from __future__ import annotations
 
 import os
+from argparse import ArgumentParser, Namespace
+from typing import Any, Generator
 
 from cliff.command import Command
 
@@ -79,18 +82,20 @@ IGNORED = set(
 
 
 class NoSuchChore(ValueError):
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.chore_name = name
 
 
 class ChoreList(Command):
-    def get_parser(self, *args, **kwargs):
+    """perform one or more chores"""
+
+    def get_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
         parser = super().get_parser(*args, **kwargs)
         parser.add_argument('--list', action='store_true', help='list chores')
         parser.add_argument('chore', nargs='?', help='a chore to detail')
         return parser
 
-    def take_action(self, parsed_args):
+    def take_action(self, parsed_args: Namespace) -> None:
         if parsed_args.list or parsed_args.chore is None:
             self.print_chores_stats()
         elif parsed_args.chore:
@@ -103,17 +108,17 @@ class ChoreList(Command):
 
             self.list_chore_details(chore)
 
-    def all_chores(self):
+    def all_chores(self) -> list[type[Chore]]:
         return Chore.__subclasses__()
 
-    def get_chore(self, name):
+    def get_chore(self, name: str) -> type[Chore]:
         candidate_chores = (chore for chore in self.all_chores() if chore.name == name)
         try:
             return next(candidate_chores)
         except StopIteration:
             raise NoSuchChore(name)
 
-    def list_chore_details(self, chore):
+    def list_chore_details(self, chore: type[Chore]) -> None:
         print('Expectations:')
         chore.print_expectations()
         print()
@@ -123,7 +128,7 @@ class ChoreList(Command):
             if chore.is_applicable(repo_path) and chore.is_dirty(repo_path):
                 chore.print_dirty_details(repo_path, repo_name)
 
-    def print_chores_stats(self):
+    def print_chores_stats(self) -> None:
         for chore in self.all_chores():
             active_repos = list(repo_path for _, repo_path in self.active_repos())
             applicable_repo_paths = [
@@ -140,7 +145,7 @@ class ChoreList(Command):
             clean = len(clean_repo_paths)
             print(f'{chore.name}:', clean, '/', total, 'OK' if clean == total else '')
 
-    def active_repos(self):
+    def active_repos(self) -> Generator[tuple[str, str], None, None]:
         all_repo_names = set(
             d
             for d in os.listdir(self.config.local_source)

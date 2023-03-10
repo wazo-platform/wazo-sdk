@@ -1,4 +1,4 @@
-# Copyright 2021-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
@@ -11,35 +11,35 @@ class DockerChore(Chore):
     name = 'docker'
 
     @classmethod
-    def print_expectations(cls):
+    def print_expectations(cls) -> None:
         print('- Dockerfile does not include build-only files in final image')
 
     @classmethod
-    def is_applicable(cls, repo_path):
+    def is_applicable(cls, repo_path: str) -> bool:
         return has_dockerfile(repo_path)
 
     @classmethod
-    def is_dirty(cls, repo_path):
+    def is_dirty(cls, repo_path: str) -> bool:
         return needs_split_dockerfile(repo_path)
 
     @classmethod
-    def print_dirty_details(cls, repo_path, repo_name):
+    def print_dirty_details(cls, repo_path: str, repo_name: str) -> None:
         print(dockerfile_path(repo_name))
 
 
-def dockerfile_path(repo_path):
+def dockerfile_path(repo_path: str) -> str:
     return os.path.join(repo_path, 'Dockerfile')
 
 
-def has_dockerfile(repo_path):
+def has_dockerfile(repo_path: str) -> bool:
     return os.path.isfile(dockerfile_path(repo_path))
 
 
-def needs_split_dockerfile(repo_path):
+def needs_split_dockerfile(repo_path: str) -> bool:
     return has_one_dockerfile_from(repo_path) and has_requirements_txt(repo_path)
 
 
-def has_one_dockerfile_from(repo_path):
+def has_one_dockerfile_from(repo_path: str) -> bool:
     try:
         command = [
             'grep',
@@ -55,7 +55,7 @@ def has_one_dockerfile_from(repo_path):
         raise
 
 
-def has_requirements_txt(repo_path):
+def has_requirements_txt(repo_path: str) -> bool:
     command = [
         'grep',
         '--quiet',
