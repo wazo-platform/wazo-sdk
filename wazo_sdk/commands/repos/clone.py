@@ -10,6 +10,11 @@ from git import Repo
 
 from .base import BaseRepoCommand
 
+EXCLUDE_PATTERNS: list[str] = [
+    'playbooks',
+    'secrets',
+]
+
 
 class RepoClone(BaseRepoCommand):
     """clone all repos from all organisations"""
@@ -28,6 +33,8 @@ class RepoClone(BaseRepoCommand):
         for repo in self.iter_all_repositories():
             if repo.archived and not parsed_args.include_archived:
                 self.app.LOG.info('Skipping archived repo %s...', repo.name)
+                continue
+            if any(pattern in repo.name for pattern in EXCLUDE_PATTERNS):
                 continue
             self.app.LOG.info('Cloning %s...', repo.name)
             dest_dir = os.path.join(self.config.local_source, repo.name)
