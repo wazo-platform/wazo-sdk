@@ -58,9 +58,9 @@ class WDK(App):
         self._create_cache_dir(self.config.cache_dir)
 
         try:
-            with open(self.config.state_file_path, 'r') as f:
+            with open(self.config.state_file_path) as f:
                 self.state = State.from_file(f)
-        except IOError:
+        except OSError:
             self.state = State()
 
         self._service_manager = ServiceManager(self.LOG, self.config)
@@ -85,7 +85,7 @@ class WDK(App):
 
     def _remove_stale_config_files(self) -> None:
         files = os.listdir(self.config.cache_dir)
-        pid_files = set([f for f in files if f.endswith('.pid')])
+        pid_files = {f for f in files if f.endswith('.pid')}
         normal_files = set(files) - pid_files
         for f in normal_files:
             matching_pid = f'{f}.pid'

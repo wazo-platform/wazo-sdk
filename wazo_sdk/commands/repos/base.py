@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Generator
+from collections.abc import Generator
 
 from cliff.command import Command
 from github3 import login, GitHub
