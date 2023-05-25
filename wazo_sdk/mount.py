@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from logging import Logger
-from typing import Generator, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any
+from collections.abc import Generator
 
 import psutil
 import os
@@ -57,10 +58,9 @@ def _list_processes() -> Generator[tuple[int, str], None, None]:
                     str(pid),
                     'cmdline',
                 ),
-                'r',
             ) as f:
                 yield pid, f.read()[:-1]
-        except IOError:
+        except OSError:
             # Process already completed
             pass
 
@@ -87,7 +87,7 @@ class Mounter:
 
         pid_filename: str = mount['lsync_pidfile']  # type: ignore
         try:
-            with open(pid_filename, 'r') as f:
+            with open(pid_filename) as f:
                 pid = int(f.read())
         except OSError:
             return False
@@ -96,7 +96,7 @@ class Mounter:
             return False
 
         try:
-            with open(os.path.join('/proc', str(pid), 'status'), 'r') as f:
+            with open(os.path.join('/proc', str(pid), 'status')) as f:
                 _, cmd = f.readline().strip().rsplit('\t', 1)
                 return cmd == 'lsyncd'
         except OSError:
@@ -289,7 +289,7 @@ class Mounter:
         pid = None
 
         try:
-            with open(pid_filename, 'r') as f:
+            with open(pid_filename) as f:
                 pid = int(f.read())
         except OSError:
             self.logger.error('failed to find pidfile')

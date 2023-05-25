@@ -115,7 +115,7 @@ class Config:
 
     def _read_yml_file(self, filename: str) -> dict[str, Any]:
         try:
-            with open(filename, 'r') as f:
+            with open(filename) as f:
                 return yaml.safe_load(f)
-        except IOError:
+        except OSError:
             return {}

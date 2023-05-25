@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, Generator
+from typing import Any
+from collections.abc import Generator
 
 from cliff.command import Command
 
@@ -16,69 +17,65 @@ from .chores.docker import DockerChore  # noqa
 from .chores.mypy import MypyChore  # noqa
 
 
-ARCHIVES = set(
-    (
-        'sphinx-git',
-        'wazo-admin-ui',
-        'wazo-admin-ui-call-filter',
-        'wazo-admin-ui-call-permission',
-        'wazo-admin-ui-cdr',
-        'wazo-admin-ui-conference',
-        'wazo-admin-ui-context',
-        'wazo-admin-ui-device',
-        'wazo-admin-ui-entity',
-        'wazo-admin-ui-extension',
-        'wazo-admin-ui-funckey',
-        'wazo-admin-ui-general-settings',
-        'wazo-admin-ui-group',
-        'wazo-admin-ui-incall',
-        'wazo-admin-ui-ivr',
-        'wazo-admin-ui-line',
-        'wazo-admin-ui-market',
-        'wazo-admin-ui-moh',
-        'wazo-admin-ui-outcall',
-        'wazo-admin-ui-paging',
-        'wazo-admin-ui-parking-lot',
-        'wazo-admin-ui-schedule',
-        'wazo-admin-ui-sound',
-        'wazo-admin-ui-switchboard',
-        'wazo-admin-ui-trunk',
-        'wazo-admin-ui-user',
-        'wazo-admin-ui-voicemail',
-        'wazo-admin-ui-webhook',
-        'wazo-client-qt',
-        'wazo-doc',
-        'wazo-pbx.github.io',
-        'wazo-python-anytree-packaging',
-        'xivo-agentd-client',
-        'xivo-amid-client',
-        'xivo-auth-client',
-        'xivo-auth-keys',
-        'xivo-blog',
-        'xivo-confd-client',
-        'xivo-ctid',
-        'xivo-ctid-client',
-        'xivo-install-cd',
-        'xivo-presentations',
-        'xivo-provd-client',
-        'xivo-python-celery-packaging',
-        'xivo-web-interface',
-        'xivo-ws',
-    )
-)
+ARCHIVES = {
+    'sphinx-git',
+    'wazo-admin-ui',
+    'wazo-admin-ui-call-filter',
+    'wazo-admin-ui-call-permission',
+    'wazo-admin-ui-cdr',
+    'wazo-admin-ui-conference',
+    'wazo-admin-ui-context',
+    'wazo-admin-ui-device',
+    'wazo-admin-ui-entity',
+    'wazo-admin-ui-extension',
+    'wazo-admin-ui-funckey',
+    'wazo-admin-ui-general-settings',
+    'wazo-admin-ui-group',
+    'wazo-admin-ui-incall',
+    'wazo-admin-ui-ivr',
+    'wazo-admin-ui-line',
+    'wazo-admin-ui-market',
+    'wazo-admin-ui-moh',
+    'wazo-admin-ui-outcall',
+    'wazo-admin-ui-paging',
+    'wazo-admin-ui-parking-lot',
+    'wazo-admin-ui-schedule',
+    'wazo-admin-ui-sound',
+    'wazo-admin-ui-switchboard',
+    'wazo-admin-ui-trunk',
+    'wazo-admin-ui-user',
+    'wazo-admin-ui-voicemail',
+    'wazo-admin-ui-webhook',
+    'wazo-client-qt',
+    'wazo-doc',
+    'wazo-pbx.github.io',
+    'wazo-python-anytree-packaging',
+    'xivo-agentd-client',
+    'xivo-amid-client',
+    'xivo-auth-client',
+    'xivo-auth-keys',
+    'xivo-blog',
+    'xivo-confd-client',
+    'xivo-ctid',
+    'xivo-ctid-client',
+    'xivo-install-cd',
+    'xivo-presentations',
+    'xivo-provd-client',
+    'xivo-python-celery-packaging',
+    'xivo-web-interface',
+    'xivo-ws',
+}
 
-IGNORED = set(
-    (
-        'nestbox-ui',
-        'wazo-cpaas',
-        'wazo-c4-router',
-        'wazo-c4-sbc',
-        'wazo-kamailio-config',
-        'wazo-router-confd-poc',
-        'wazo-unicom',
-        'wazo-nexsis',
-    )
-)
+IGNORED = {
+    'nestbox-ui',
+    'wazo-cpaas',
+    'wazo-c4-router',
+    'wazo-c4-sbc',
+    'wazo-kamailio-config',
+    'wazo-router-confd-poc',
+    'wazo-unicom',
+    'wazo-nexsis',
+}
 
 
 class NoSuchChore(ValueError):
@@ -146,11 +143,11 @@ class ChoreList(Command):
             print(f'{chore.name}:', clean, '/', total, 'OK' if clean == total else '')
 
     def active_repos(self) -> Generator[tuple[str, str], None, None]:
-        all_repo_names = set(
+        all_repo_names = {
             d
             for d in os.listdir(self.config.local_source)
             if os.path.isdir(os.path.join(self.config.local_source, d))
-        )
+        }
         active_repos_ = all_repo_names - ARCHIVES - IGNORED
         for repo_name in active_repos_:
             repo_path = os.path.join(self.config.local_source, repo_name)
