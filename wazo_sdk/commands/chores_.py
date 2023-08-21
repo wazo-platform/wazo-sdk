@@ -14,6 +14,7 @@ from .chores.chore import Chore
 # Those classes need to be imported to be listed
 from .chores.authors import AuthorsChore  # noqa
 from .chores.docker import DockerChore  # noqa
+from .chores.log_marker import LogMarkerChore  # noqa
 from .chores.mypy import MypyChore  # noqa
 
 
