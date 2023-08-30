@@ -24,3 +24,10 @@ github_token: 123456789abcdef0123456789abcdef012345678
 # The GitHub organisations to clone from
 github_orgs:
   - wazo-platform
+
+# configuration affecting the init subcommand
+init:
+  # debian apt packages to install on the remote system when running the init subcommand
+  packages:
+    - rsync
+    - python3-pip
