@@ -220,7 +220,7 @@ class Mounter:
         self._wait_for_file(ssh, setup_path)
 
         repo_dir = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop']
+        cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop', '-N']
         self.logger.debug(ssh(' '.join(cmd)))
 
     def _umount_python3(self, ssh: sh.Command, repo_name: str) -> None:
