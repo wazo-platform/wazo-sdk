@@ -291,9 +291,9 @@ xivo-manage-db:
     bin/pg-populate-db: /usr/lib/xivo-manage-db/pg-populate-db
     alembic: /usr/share/xivo-manage-db/alembic
 
-xivo-monitoring:
+wazo-monitoring:
   bind:
-    xivo-monitoring-update: /usr/sbin/xivo-monitoring-update
+    wazo-monitoring-update: /usr/sbin/wazo-monitoring-update
 
 xivo-swagger-doc:
   bind:
