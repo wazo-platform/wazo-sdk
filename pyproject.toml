@@ -26,3 +26,7 @@ exclude = [
     ".tox",
     ".eggs",
 ]
+
+[tool.isort]
+profile = "black"
+py_version = 39
