@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
 from typing import Any
 
 from cliff.command import Command
+
 from wazo_sdk.service import ServiceManager
 
 

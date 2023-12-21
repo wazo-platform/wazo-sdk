@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import os
-import sys
 import pathlib
+import sys
 from argparse import ArgumentParser
 from typing import Any
 

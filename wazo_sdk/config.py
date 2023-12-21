@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import os
-import yaml
-
-from typing import Any, TYPE_CHECKING
 from argparse import Namespace
+from typing import TYPE_CHECKING, Any
 
+import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'

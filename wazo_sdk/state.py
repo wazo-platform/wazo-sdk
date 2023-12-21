@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, TextIO, TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Any, TextIO
 
 if TYPE_CHECKING:
     from typing import TypedDict
