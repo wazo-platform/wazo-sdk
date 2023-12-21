@@ -1,10 +1,10 @@
 # Copyright 2021-2023 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .chore import Chore
-
 import os
 import subprocess
+
+from .chore import Chore
 
 
 class AuthorsChore(Chore):

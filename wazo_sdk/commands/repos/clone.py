@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
-from argparse import Namespace, ArgumentParser
 import os
+from argparse import ArgumentParser, Namespace
 from typing import Any
 
 from git import Repo

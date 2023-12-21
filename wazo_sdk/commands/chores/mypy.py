@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-from .chore import Chore
-
-from configparser import ConfigParser
 import os
+from configparser import ConfigParser
+
+from .chore import Chore
 
 
 class MypyChore(Chore):

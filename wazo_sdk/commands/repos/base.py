@@ -6,7 +6,7 @@ import logging
 from collections.abc import Generator
 
 from cliff.command import Command
-from github3 import login, GitHub
+from github3 import GitHub, login
 from github3.repos import ShortRepository
 
 from wazo_sdk.config import Config

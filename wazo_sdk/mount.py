@@ -2,24 +2,24 @@
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
-from logging import Logger
-from typing import TYPE_CHECKING, Any
-from collections.abc import Generator
-
-import psutil
 import os
-import sh
 import signal
 import subprocess
 import tempfile
+from collections.abc import Generator
+from logging import Logger
+from typing import TYPE_CHECKING, Any
+
+import psutil
+import sh
 from jinja2 import Template
 
 from wazo_sdk.config import Config
 from wazo_sdk.state import State
 
 if TYPE_CHECKING:
-    from wazo_sdk.state import MountData
     from wazo_sdk.config import ProjectConfigData
+    from wazo_sdk.state import MountData
 
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']

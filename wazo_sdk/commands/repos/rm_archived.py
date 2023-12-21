@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import os
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
 from shutil import rmtree
 from typing import Any
 
 from git import Repo
+
 from .base import BaseRepoCommand
 
 
