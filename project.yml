@@ -304,9 +304,9 @@ wazo-sysconfd:
   clean:
     - /usr/local/bin/wazo-sysconfd
 
-xivo-sync:
+wazo-sync:
   bind:
-    bin/xivo-sync: /usr/bin/xivo-sync
+    bin/wazo-sync: /usr/bin/wazo-sync
 
 xivo-utils:
   bind:
