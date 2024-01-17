@@ -68,6 +68,9 @@ wazo-auth-keys:
     etc/wazo-auth-keys/config.yml: /etc/wazo-auth-keys/config.yml
     etc/wazo-auth/conf.d/50-wazo-default.yml: /etc/wazo-auth/conf.d/50-wazo-default.yml
 
+wazo-bus:
+  python3: true
+
 wazo-debug:
   python3: true
   clean:
@@ -264,9 +267,6 @@ wazo-websocketd:
     etc/wazo-websocketd/config.yml: /etc/wazo-websocketd/config.yml
   clean:
     - /usr/local/bin/wazo-websocketd
-
-xivo-bus:
-  python3: true
 
 xivo-config:
   bind:
