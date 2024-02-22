@@ -139,22 +139,22 @@ If you also wish to include archived repos add the `--include-archived` (or `-a`
 wdk repo clone --include-archived
 ```
 
-## Remove local repos that have been archived
+## Remove orphan local repos from local_source (archived, removed)
 
 ```sh
-wdk repo rm archived
+wdk repo rm orphan
 ```
 
 To see which repos will be deleted you can first run with the option `--dry-run` (or `-d`)
 
 ```sh
-wdk repo rm archived --dry-run
+wdk repo rm orphan --dry-run
 ```
 
 If you wish to exclude one or more repos from removal you can use the option `--exclude` (or `-e`)
 
 ```sh
-wdk repo rm archived --exclude nestbox-ui wazo-nexsis
+wdk repo rm orphan --exclude nestbox-ui wazo-nexsis
 ```
 
 ## Tailing a log files

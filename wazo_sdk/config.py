@@ -1,4 +1,4 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
         remote_source: str
         project_file: str
         cache_dir: str
+        archive_dir: str
         rsync_only: bool
         github_username: str | None
         github_token: str | None
@@ -47,6 +48,12 @@ class Config:
     def cache_dir(self) -> str:
         return os.path.expanduser(
             self._file_config.get('cache_dir', _DEFAULT_CACHE_DIR)
+        )
+
+    @property
+    def archive_dir(self) -> str:
+        return os.path.expanduser(
+            self._file_config.get('archive_dir', self.local_source)
         )
 
     @property
