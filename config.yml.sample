@@ -10,6 +10,10 @@ remote_source: /usr/src/wazo
 # The location of the project description file
 project_file: ~/.config/wdk/project.yml
 
+# The location of your local copy of the Wazo archived source code
+# Default to 'local_source' directory
+archive_dir: ~/wazo/archived
+
 cache_dir: ~/.local/cache/wdk
 
 rsync_only: false

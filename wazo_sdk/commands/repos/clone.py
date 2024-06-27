@@ -1,4 +1,4 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
@@ -32,13 +32,20 @@ class RepoClone(BaseRepoCommand):
     def take_action(self, parsed_args: Namespace) -> None:
         for repo in self.iter_all_repositories():
             if repo.archived and not parsed_args.include_archived:
-                self.app.LOG.info('Skipping archived repo %s...', repo.name)
+                self.app.LOG.debug('Skipping archived repo %s...', repo.name)
                 continue
+
             if any(pattern in repo.name for pattern in EXCLUDE_PATTERNS):
                 continue
-            self.app.LOG.info('Cloning %s...', repo.name)
-            dest_dir = os.path.join(self.config.local_source, repo.name)
+
+            if repo.archived:
+                dest_dir = os.path.join(self.config.archive_dir, repo.name)
+            else:
+                dest_dir = os.path.join(self.config.local_source, repo.name)
+
             if os.path.isdir(dest_dir):
-                self.app.LOG.info('Directory %s already exists.', repo.name)
+                self.app.LOG.debug('Directory %s already exists.', repo.name)
                 continue
+
+            self.app.LOG.info('Cloning %s...', repo.name)
             Repo.clone_from(repo.ssh_url, to_path=dest_dir)
