@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from setuptools import find_packages, setup
@@ -25,6 +25,7 @@ setup(
             'repo_clone = wazo_sdk.commands.repos.clone:RepoClone',
             'repo_rm_archive = wazo_sdk.commands.repos.rm_archived:RemoveArchivedRepo',
             'tailf = wazo_sdk.commands.tailf:Tailf',
+            'ws = wazo_sdk.commands.tail_websocket:TailWebsocket',
         ],
     },
 )
