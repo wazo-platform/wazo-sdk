@@ -1,4 +1,4 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
@@ -27,6 +27,8 @@ if TYPE_CHECKING:
         github_username: str | None
         github_token: str | None
         github_orgs: list[str]
+        wazo_username: str | None
+        wazo_password: str | None
 
     class ProjectConfigData(TypedDict):
         python2: bool
@@ -82,6 +84,14 @@ class Config:
         )
 
     @property
+    def wazo_username(self) -> str | None:
+        return self._file_config.get('wazo_username')
+
+    @property
+    def wazo_password(self) -> str | None:
+        return self._file_config.get('wazo_password')
+
+    @property
     def github_orgs(self) -> list[str]:
         return self._file_config.get('github_orgs') or []
 
@@ -98,6 +108,7 @@ class Config:
         return self._project_config[name]
 
     def get_project_name(self, short_name: str) -> str:
+        print(f'short_name = {short_name}')
         for prefix in REPO_PREFIX:
             name = f'{prefix}{short_name}'
             if name in self._project_config:
