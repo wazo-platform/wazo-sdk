@@ -5,3 +5,6 @@ psutil
 sh
 jinja2
 pyyaml
+websocket-client==0.57.0
+https://github.com/wazo-platform/wazo-websocketd-client/archive/master.zip
+https://github.com/wazo-platform/wazo-auth-client/archive/master.zip
