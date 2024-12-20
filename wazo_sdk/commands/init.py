@@ -1,16 +1,23 @@
-# Copyright 2018-2023 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
 import logging
 from argparse import ArgumentParser, Namespace
-from typing import Any
+from collections.abc import Iterator
+from typing import Any, TypedDict
 
 import sh
 from cliff.app import App
 from cliff.command import Command
 
 from wazo_sdk.config import Config
+
+
+class APTPolicyInfo(TypedDict):
+    success: bool
+    details: str
+    name: str
 
 
 class PackageManager:
@@ -20,19 +27,19 @@ class PackageManager:
         self.hostname = hostname
         self.logger = logger
 
-    def ensure_packages(self, packages: list[str]):
+    def ensure_packages(self, packages: list[str]) -> Iterator[APTPolicyInfo]:
         if packages:
             ssh = sh.ssh.bake(self.hostname, _return_cmd=True)
             self._install_packages(ssh, packages)
 
             yield from self._check_packages(ssh, packages)
 
-    def _check_packages(self, ssh: sh.Command, packages: list[str]):
+    def _check_packages(
+        self, ssh: sh.Command, packages: list[str]
+    ) -> Iterator[APTPolicyInfo]:
         for pkg in packages:
             run_cmd: sh.RunningCommand = ssh(f'apt-cache policy {pkg}')
-            # try:
-            # except sh.ErrorReturnCode as ex:
-            #     success = False
+
             self.logger.debug('cmd=%s', run_cmd)
 
             yield {
@@ -65,18 +72,10 @@ class Init(Command):
 
     def get_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
         parser = super().get_parser(*args, **kwargs)
-        # parser.add_argument(
-        #     '--list', action='store_true', help='list mounted repositories'
-        # )
-        # parser.add_argument(
-        #     '--restart', '-r', action='store_true', help='restart mounted repositories'
-        # )
-        # parser.add_argument(
-        #     'repos', nargs='*', default=[], help='a list repos to mount'
-        # )
         return parser
 
     def take_action(self, parsed_args: Namespace) -> None:
+        assert self.config.hostname
         package_manager = PackageManager(self.config.hostname, self.logger)
         if not self.config.init_packages:
             self.app.stdout.write('no packages to install\n')
