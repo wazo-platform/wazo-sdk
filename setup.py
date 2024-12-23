@@ -17,6 +17,7 @@ setup(
             f'{NAME}=wazo_sdk.main:main',
         ],
         'wazo_sdk.commands': [
+            'init = wazo_sdk.commands.init:Init',
             'info = wazo_sdk.commands.info:Info',
             'chores = wazo_sdk.commands.chores_:ChoreList',
             'mount = wazo_sdk.commands.mount:Mount',

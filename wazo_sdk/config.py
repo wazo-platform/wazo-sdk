@@ -13,10 +13,13 @@ _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
-
+DEFAULT_INIT_PACKAGES = ['python3-pip', 'rsync']
 
 if TYPE_CHECKING:
     from typing import TypedDict
+
+    class InitConfigData(TypedDict):
+        packages: list[str]
 
     class ConfigData(TypedDict):
         hostname: str
@@ -29,6 +32,7 @@ if TYPE_CHECKING:
         github_username: str | None
         github_token: str | None
         github_orgs: list[str]
+        init: InitConfigData
 
     class ProjectConfigData(TypedDict):
         python2: bool
@@ -100,6 +104,10 @@ class Config:
     @property
     def github_username(self) -> str | None:
         return self._file_config.get('github_username')
+
+    @property
+    def init_packages(self) -> list[str]:
+        return self._file_config.get('init', {}).get('packages', DEFAULT_INIT_PACKAGES)
 
     def get_project(self, short_name: str) -> ProjectConfigData:
         name = self.get_project_name(short_name)
