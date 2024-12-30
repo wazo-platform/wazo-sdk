@@ -295,10 +295,6 @@ wazo-monitoring:
   bind:
     wazo-monitoring-update: /usr/sbin/wazo-monitoring-update
 
-xivo-swagger-doc:
-  bind:
-    index.json: /usr/share/xivo-swagger-doc/catalog/index.json
-
 wazo-sysconfd:
   python3: true
   clean:
