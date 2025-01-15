@@ -73,6 +73,8 @@ wazo-bus:
 
 wazo-debug:
   python3: true
+  bind:
+    bin/wazo-debug-enable-debug-logs: /usr/bin/wazo-debug-enable-debug-logs
   clean:
     - /usr/local/bin/wazo-debug
 
