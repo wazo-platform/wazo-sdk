@@ -197,6 +197,7 @@ wazo-provd:
   python3: true
   bind:
     etc/wazo-provd: /etc/wazo-provd
+    usr/bin/dhcpd-update: /usr/sbin/dhcpd-update
   log_filename: /var/log/wazo-provd.log
   service: wazo-provd
 
