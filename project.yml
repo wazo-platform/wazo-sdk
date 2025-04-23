@@ -260,6 +260,7 @@ wazo-webhookd:
     - /usr/local/bin/wazo-webhookd
     - /usr/local/bin/wazo-webhookd-init-amqp
     - /usr/local/bin/wazo-webhookd-init-db
+    - /usr/local/bin/wazo-webhookd-sync-db
 
 wazo-webhookd-client:
   python3: true
