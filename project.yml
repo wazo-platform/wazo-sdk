@@ -35,6 +35,13 @@ wazo-amid:
   clean:
     - /usr/local/bin/wazo-amid
 
+wazo-asterisk-cli:
+  python3: true
+  bind:
+    etc/wazo-asterisk-cli/config.yml: /etc/wazo-asterisk-cli/config.yml
+  clean:
+    - /usr/local/bin/wazo-asterisk-cli
+
 wazo-asterisk-config:
   bind:
     etc/asterisk/ari.d/01-wazo.conf: /etc/asterisk/ari.d/01-wazo.conf
@@ -49,6 +56,7 @@ wazo-auth:
   clean:
     - /usr/local/bin/wazo-auth
     - /usr/local/bin/wazo-auth-init-db
+    - /usr/local/bin/wazo-auth-upgrade-db
     - /usr/local/bin/wazo-auth-bootstrap
     - /usr/local/bin/wazo-auth-wait
 
@@ -117,6 +125,7 @@ wazo-confd:
     etc/wazo-confd/config.yml: /etc/wazo-confd/config.yml
   clean:
     - /usr/local/bin/wazo-confd
+    - /usr/local/bin/wazo-confd-wait
     - /usr/local/bin/wazo-confd-sync-db
     - /usr/local/bin/wazo-confd-purge-meetings
 
