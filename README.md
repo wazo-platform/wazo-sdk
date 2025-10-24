@@ -204,6 +204,41 @@ lsyncd -nodaemon -delay 1 -rsyncssh /home/user/git/origin/wazo-confd wazo.exampl
 
 For more information: <https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers>
 
+### Finding and cleaning up leftover mounts on a system
+
+- if a mount is in place, and should be removed, but the wdk state created by the `wdk mount` is unavailable
+- if a `wdk umount` did not complete successfully, and the wdk state file is cleared or corrupted (no local trace of the remaining mounts)
+- if wanting to make sure that no mounts are present on a system, without relying on wdk
+
+It should still be a good idea to run `wdk umount <project>` before doing any further manual steps.
+
+#### Bind mounts
+
+- Remaining bind mounts can be indentified `findmnt`;
+  `findmnt` identifies bind mounts by specifying a directory along with the partition in the mount source field
+  Example:
+  ```sh
+  # findmnt --raw | grep -E '\[.+\]'
+  /usr/share/wazo-webhookd/alembic /dev/xvda1[/usr/src/wazo/wazo-webhookd/alembic] ext4 rw,relatime
+  ```
+- to unmount a leftover bind mount, use `umount <mount target>`
+  Example:
+  ```sh
+  # umount /usr/share/wazo-webhookd/alembic
+  ```
+
+#### Python development installs
+
+- Debian packages use `/usr/lib/python3/dist-packages/` for python libraries;
+  `/usr/local/lib/python<version>/dist-packages/` is used for "external" (non-package-manager) installs, which should include those development installs managed by wdk;
+- Python sources installed with `setup.py develop` create `*.egg-link` files and add entries in an `easy-install.pth` file under `/usr/local/lib/python<version>/`;
+  check with `find /usr/local/lib -name '*.egg-link'` and `find /usr/local/lib -name 'easy-install.pth'`;
+- To remove a development install, navigate to the development sources project directory (e.g. `/usr/src/wazo/<project>`), then run `python3 setup.py develop -u`;
+  If that fails or does not properly cleanup those installs, remove the egg link files manually and remove entries from the `easy-install.pth` files;
+- Python package installs may add binaries/console scripts (e.g. `wazo-*`) in `/usr/local/bin`;
+  Check these against the console scripts defined in `/usr/src/wazo/<project>/setup.py`;
+
+
 ## The state file
 
 The state file contains information about the current state of wdk.
