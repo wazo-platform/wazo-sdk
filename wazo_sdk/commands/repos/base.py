@@ -1,22 +1,17 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2025 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
 
 import logging
 from collections.abc import Generator
+from functools import cached_property
 
 from cliff.command import Command
 from github3 import GitHub, login
 from github3.repos import ShortRepository
 
 from wazo_sdk.config import Config
-
-try:
-    from functools import cached_property
-except ImportError:
-    # Fallback for Python < 3.9
-    cached_property = property  # type: ignore
 
 
 class BaseRepoCommand(Command):
