@@ -301,7 +301,6 @@ xivo-lib-python:
 xivo-manage-db:
   bind:
     bin/pg-drop-db: /usr/lib/xivo-manage-db/pg-drop-db
-    bin/pg-populate-db: /usr/lib/xivo-manage-db/pg-populate-db
     alembic: /usr/share/xivo-manage-db/alembic
 
 wazo-monitoring:
