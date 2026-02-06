@@ -44,6 +44,8 @@ wazo-asterisk-cli:
 
 wazo-asterisk-config:
   bind:
+    dialplan: /usr/share/wazo-asterisk-config/dialplan
+    etc/xivo/asterisk/xivo_globals.conf: /etc/xivo/asterisk/xivo_globals.conf
     etc/asterisk/ari.d/01-wazo.conf: /etc/asterisk/ari.d/01-wazo.conf
     etc/asterisk/cel.d/01-wazo.conf: /etc/asterisk/cel.d/01-wazo.conf
     etc/asterisk/manager.d/99-general.conf: /etc/asterisk/manager.d/99-general.conf
@@ -283,8 +285,6 @@ wazo-websocketd:
 
 xivo-config:
   bind:
-    dialplan: /usr/share/xivo-config/dialplan
-    etc/xivo/asterisk/xivo_globals.conf: /etc/xivo/asterisk/xivo_globals.conf
     sbin/xivo-create-config: /usr/sbin/xivo-create-config
     sbin/xivo-read-config: /usr/sbin/xivo-read-config
     sbin/xivo-update-config: /usr/sbin/xivo-update-config
