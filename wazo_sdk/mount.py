@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
@@ -192,6 +192,7 @@ class Mounter:
                 continue
             src_path = os.path.join(self._remote_dir, repo_name, source)
             self._wait_for_file(ssh, src_path)
+            self._ensure_dest_exists(ssh, src_path, dest)
             cmd = ['mount', '--bind', src_path, dest]
             self.logger.debug(ssh(' '.join(cmd)))
 
@@ -230,6 +231,13 @@ class Mounter:
         repo_dir = os.path.join(self._remote_dir, repo_name)
         cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop', '--uninstall']
         self.logger.debug(ssh(' '.join(cmd)))
+
+    def _ensure_dest_exists(self, ssh: sh.Command, src_path: str, dest: str) -> None:
+        ssh(
+            f'if [ ! -e {dest} ]; then '
+            f'if [ -d {src_path} ]; then mkdir -p {dest}; '
+            f'else mkdir -p "$(dirname {dest})" && touch {dest}; fi; fi'
+        )
 
     def _wait_for_file(self, ssh: sh.Command, filename: str) -> None:
         ssh(f'while [ ! -e {filename} ]; do sleep 0.2; done')
