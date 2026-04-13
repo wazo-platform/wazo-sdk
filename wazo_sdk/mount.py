@@ -1,9 +1,10 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
 
 import os
+import shlex
 import signal
 import subprocess
 import tempfile
@@ -192,11 +193,12 @@ class Mounter:
                 continue
             src_path = os.path.join(self._remote_dir, repo_name, source)
             self._wait_for_file(ssh, src_path)
-            cmd = ['mount', '--bind', src_path, dest]
-            self.logger.debug(ssh(' '.join(cmd)))
+            self._ensure_dest_exists(ssh, src_path, dest)
+            cmd = f'mount --bind {shlex.quote(src_path)} {shlex.quote(dest)}'
+            self.logger.debug(ssh(cmd))
 
     def _clean_files(self, ssh: sh.Command, files: list[str]) -> None:
-        ssh(f'rm -rf {" ".join(files)}')
+        ssh(f'rm -rf {" ".join(shlex.quote(f) for f in files)}')
 
     def _remove_bind_files(
         self, ssh: sh.Command, repo_name: str, binds: dict[str, str]
@@ -213,8 +215,8 @@ class Mounter:
             if dest not in mounted:
                 continue
 
-            cmd = ['umount', dest]
-            self.logger.debug(ssh(' '.join(cmd)))
+            cmd = f'umount {shlex.quote(dest)}'
+            self.logger.debug(ssh(cmd))
 
     def _mount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
@@ -223,16 +225,25 @@ class Mounter:
         repo_dir = os.path.join(self._remote_dir, repo_name)
         # -N flag ensures the dependencies are not installed/updated,
         # in order to retain consistency of debian packaging
-        cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop', '-N']
-        self.logger.debug(ssh(' '.join(cmd)))
+        cmd = f'cd {shlex.quote(repo_dir)} && python3 setup.py develop -N'
+        self.logger.debug(ssh(cmd))
 
     def _umount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         repo_dir = os.path.join(self._remote_dir, repo_name)
-        cmd = ['cd', repo_dir, ';', 'python3', 'setup.py', 'develop', '--uninstall']
-        self.logger.debug(ssh(' '.join(cmd)))
+        cmd = f'cd {shlex.quote(repo_dir)} && python3 setup.py develop --uninstall'
+        self.logger.debug(ssh(cmd))
+
+    def _ensure_dest_exists(self, ssh: sh.Command, src_path: str, dest: str) -> None:
+        q_dest = shlex.quote(dest)
+        q_src = shlex.quote(src_path)
+        ssh(
+            f'if [ ! -e {q_dest} ]; then '
+            f'if [ -d {q_src} ]; then mkdir -p {q_dest}; '
+            f'else mkdir -p "$(dirname {q_dest})" && touch {q_dest}; fi; fi'
+        )
 
     def _wait_for_file(self, ssh: sh.Command, filename: str) -> None:
-        ssh(f'while [ ! -e {filename} ]; do sleep 0.2; done')
+        ssh(f'while [ ! -e {shlex.quote(filename)} ]; do sleep 0.2; done')
 
     def _start_sync(self, local_repo_name: str, real_repo_name: str) -> None:
         local_path = os.path.join(self._local_dir, local_repo_name)
