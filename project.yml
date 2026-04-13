@@ -299,9 +299,15 @@ xivo-lib-python:
   python3: true
 
 xivo-manage-db:
+  python3: true
   bind:
     bin/pg-drop-db: /usr/lib/xivo-manage-db/pg-drop-db
     alembic: /usr/share/xivo-manage-db/alembic
+  clean:
+    - /usr/local/bin/pg-drop-db
+    - /usr/local/bin/xivo-check-db
+    - /usr/local/bin/xivo-init-db
+    - /usr/local/bin/xivo-update-db
 
 wazo-monitoring:
   bind:
