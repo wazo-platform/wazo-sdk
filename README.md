@@ -56,14 +56,6 @@ ln -s $(readlink -f project.yml) ~/.config/wdk/project.yml
 If using WSL2, please be aware that you should use a filesystem that is in the Linux
 partition used by your utility virtual machine. Otherwise, inotify will not work.
 
-### On the target machine (Wazo)
-
-```sh
-apt update
-apt install rsync
-mkdir /usr/src/wazo  # or whatever your <local_source>
-```
-
 ## Configuration
 
 The default location of the configuration file is `~/.config/wdk/config.yml` you can check
@@ -100,6 +92,64 @@ configuration file for example the mount will have to be redone when you change 
 file.
 
 Note that new entry points will need the project to be unmounted and mounted again to be applied.
+
+### On the target machine (Wazo)
+
+#### Install dependencies
+Install rsync, and create a folder where repos must be available
+
+```sh
+apt update
+apt install rsync
+mkdir /usr/src/wazo  # or whatever your <local_source>
+```
+
+Install ssh
+```sh
+apt update
+apt install openssh-server
+```
+
+confiure ssh to enable root login
+```sh
+nano /etc/ssh/sshd_config
+```
+
+Add this line
+```sh
+PermitRootLogin yes
+```
+
+Restart sshd
+```sh
+sudo systemctl restart ssh
+```
+
+#### Cloning repos
+The repos you want to mount must be available in the local source folder
+
+```sh
+cd /usr/src/wazo
+git clone https://github.com/wazo-platform/the-repo-you-want
+```
+
+## Set the configuration file
+On your computer, edit the config file
+
+```sh
+nano ~/.config/wdk/config.yml
+```
+
+This is an example
+```yml
+# The wazo on wich you wish to work: [user@]wazo.example.com
+hostname: root@your-ip-or-hostname
+# The location of your local copy of the wazo code
+# You will clone git here
+local_source: ~/wazo
+# The location of the source code that is synchronized on the wazo server
+remote_source: /usr/src/wazo 
+```
 
 ## Mounting a project
 
