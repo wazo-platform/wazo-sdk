@@ -291,14 +291,19 @@ class Mounter:
         )
 
     def _stop_sync(self, repo_name: str) -> None:
-        if self._config.rsync_only:
-            return
-
         mount = self._state.get_mount(self._hostname, repo_name)
         if not mount:
             self.logger.error('failed to find a matching mount to stop')
             return
 
+        self._state.remove_mount(self._hostname, repo_name)
+
+        if self._config.rsync_only:
+            return
+
+        self._stop_lsync(mount)
+
+    def _stop_lsync(self, mount: MountData) -> None:
         pid_filename: str = mount['lsync_pidfile']  # type: ignore
         pid = None
 
@@ -313,8 +318,6 @@ class Mounter:
                 os.kill(pid, signal.SIGTERM)
             except OSError:
                 self.logger.error('failed to kill %s', pid)
-
-        self._state.remove_mount(self._hostname, repo_name)
 
     def _find_local_repo_name(self, repo_name: str) -> str:
         for prefix in REPO_PREFIX:
