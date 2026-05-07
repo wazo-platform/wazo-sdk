@@ -23,6 +23,8 @@ _DEFAULT_CONFIG_FILENAME = os.getenv('WDK_CONFIG_FILE', _DEFAULT_CONFIG_FILENAME
 
 
 class WDK(App):
+    CONSOLE_MESSAGE_FORMAT = '%(name)s: %(message)s'
+
     config: Config
     state: State
     _service_manager: ServiceManager
