@@ -1,4 +1,4 @@
-# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from cliff.command import Command
 from cliff.commandmanager import CommandManager
 
 from wazo_sdk.config import Config
-from wazo_sdk.mount import Mounter
+from wazo_sdk.mount import Mounter, is_lsyncd_pid
 from wazo_sdk.service import ServiceManager
 from wazo_sdk.state import State
 
@@ -97,11 +97,30 @@ class WDK(App):
             if path == self.config.state_file_path:
                 continue
 
-            self.LOG.debug('remove stale config file: %s', path)
+            self.LOG.debug('removing stale config file: %s', path)
             try:
                 os.unlink(path)
             except OSError:
                 pass
+
+        for f in pid_files:
+            path = os.path.join(self.config.cache_dir, f)
+            if self._is_lsyncd_pidfile_live(path):
+                continue
+            self.LOG.debug('removing stale pid file: %s', path)
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
+    def _is_lsyncd_pidfile_live(self, path: str) -> bool:
+        try:
+            with open(path) as f:
+                pid = int(f.read().strip())
+        except (OSError, ValueError) as ex:
+            self.LOG.debug("error reading pidfile %s: %s", path, ex)
+            return False
+        return is_lsyncd_pid(pid)
 
 
 def main(argv: list[str] | None = None) -> None:

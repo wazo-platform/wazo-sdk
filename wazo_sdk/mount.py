@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import shlex
 import signal
@@ -22,6 +23,21 @@ from wazo_sdk.state import State
 if TYPE_CHECKING:
     from wazo_sdk.config import ProjectConfigData
     from wazo_sdk.state import MountData
+
+
+_logger = logging.getLogger(__name__)
+
+
+def is_lsyncd_pid(pid: int) -> bool:
+    if pid not in psutil.pids():
+        return False
+    try:
+        with open(os.path.join('/proc', str(pid), 'status')) as f:
+            _, cmd = f.readline().strip().rsplit('\t', 1)
+            return cmd == 'lsyncd'
+    except OSError as e:
+        _logger.warning('could not read /proc/%s/status: %s', pid, e)
+        return False
 
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
@@ -94,15 +110,7 @@ class Mounter:
         except OSError:
             return False
 
-        if pid not in psutil.pids():
-            return False
-
-        try:
-            with open(os.path.join('/proc', str(pid), 'status')) as f:
-                _, cmd = f.readline().strip().rsplit('\t', 1)
-                return cmd == 'lsyncd'
-        except OSError:
-            return False
+        return is_lsyncd_pid(pid)
 
     def _is_mounted(self, repo_name: str) -> bool:
         return self._state.is_mounted(self._hostname, repo_name)
@@ -296,28 +304,29 @@ class Mounter:
             self.logger.error('failed to find a matching mount to stop')
             return
 
-        self._state.remove_mount(self._hostname, repo_name)
+        if not self._config.rsync_only:
+            pid_filename: str | None = mount['lsync_pidfile']
+            pid = None
 
-        if self._config.rsync_only:
-            return
-
-        self._stop_lsync(mount)
-
-    def _stop_lsync(self, mount: MountData) -> None:
-        pid_filename: str = mount['lsync_pidfile']  # type: ignore
-        pid = None
-
-        try:
-            with open(pid_filename) as f:
-                pid = int(f.read())
-        except OSError:
-            self.logger.error('failed to find pidfile')
-
-        if pid:
             try:
-                os.kill(pid, signal.SIGTERM)
-            except OSError:
-                self.logger.error('failed to kill %s', pid)
+                with open(pid_filename) as f:  # type: ignore[arg-type]
+                    pid = int(f.read())
+            except OSError as ex:
+                self.logger.error('failed to read pidfile (%s): %s', pid_filename, ex)
+
+            if pid:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except OSError as ex:
+                    self.logger.error('failed to kill %s: %s', pid, ex)
+
+            if pid_filename:
+                try:
+                    os.unlink(pid_filename)
+                except OSError:
+                    pass
+
+        self._state.remove_mount(self._hostname, repo_name)
 
     def _find_local_repo_name(self, repo_name: str) -> str:
         for prefix in REPO_PREFIX:
