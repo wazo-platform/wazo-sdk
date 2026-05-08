@@ -284,14 +284,23 @@ class Mounter:
 
         # Run sync command
         self.logger.debug('%s', ' '.join(sync_command))
-        proc = subprocess.Popen(sync_command)
+        proc = subprocess.Popen(sync_command, stderr=subprocess.PIPE)
         try:
-            outs, errs = proc.communicate(**communicate_kwargs)
-            if errs:
-                self.logger.info('%s failed %s', ' '.join(sync_command), errs)
+            _, errs = proc.communicate(**communicate_kwargs)
+            if proc.returncode != 0:
+                stderr_msg = errs.decode(errors='replace').strip() if errs else ''
+                self.logger.error(
+                    '%s failed (exit %s)%s',
+                    ' '.join(sync_command),
+                    proc.returncode,
+                    f': {stderr_msg}' if stderr_msg else '',
+                )
                 return
         except subprocess.TimeoutExpired:
-            self.logger.info('%s failed %s', ' '.join(sync_command), 'timeout')
+            self.logger.error(
+                '%s did not daemonize within timeout', ' '.join(sync_command)
+            )
+            proc.kill()
             return
 
         self._state.add_mount(
