@@ -28,6 +28,10 @@ if TYPE_CHECKING:
 _logger = logging.getLogger(__name__)
 
 
+class SyncError(Exception):
+    pass
+
+
 def is_lsyncd_pid(pid: int) -> bool:
     if pid not in psutil.pids():
         return False
@@ -133,8 +137,7 @@ class Mounter:
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
 
-        # Skip this condition if we are in rsync only mode,
-        # because files a not synced automatically
+        # Skip sync if lsync is already running (rsync-only always re-syncs)
         if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
@@ -282,26 +285,19 @@ class Mounter:
             sync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
             communicate_kwargs = {'timeout': 1}
 
-        # Run sync command
         self.logger.debug('%s', ' '.join(sync_command))
         proc = subprocess.Popen(sync_command, stderr=subprocess.PIPE)
         try:
             _, errs = proc.communicate(**communicate_kwargs)
             if proc.returncode != 0:
                 stderr_msg = errs.decode(errors='replace').strip() if errs else ''
-                self.logger.error(
-                    '%s failed (exit %s)%s',
-                    ' '.join(sync_command),
-                    proc.returncode,
-                    f': {stderr_msg}' if stderr_msg else '',
+                raise SyncError(
+                    f'{sync_command[0]} failed (exit {proc.returncode})'
+                    + (f': {stderr_msg}' if stderr_msg else '')
                 )
-                return
         except subprocess.TimeoutExpired:
-            self.logger.error(
-                '%s did not daemonize within timeout', ' '.join(sync_command)
-            )
             proc.kill()
-            return
+            raise SyncError(f'{sync_command[0]} did not daemonize within timeout')
 
         self._state.add_mount(
             self._hostname, real_repo_name, config_filename, pid_filename
