@@ -1,8 +1,9 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
 
+import logging
 from argparse import ArgumentParser, Namespace
 from typing import Any
 
@@ -33,9 +34,13 @@ class Mount(Command):
 
     def take_action(self, parsed_args: Namespace) -> None:
         for repo in parsed_args.repos:
-            self.mounter.mount(repo)
-            if parsed_args.restart:
-                self.service.restart(repo)
+            try:
+                self.mounter.mount(repo)
+            except Exception:
+                self.app.LOG.exception('Error unmount repo %s', repo)
+            else:
+                if parsed_args.restart:
+                    self.service.restart(repo)
 
         if parsed_args.list:
             mounted_repos = self.mounter.list_()
@@ -49,6 +54,7 @@ class Umount(Command):
 
     mounter: Mounter
     service: ServiceManager
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
         parser = super().get_parser(*args, **kwargs)
@@ -66,6 +72,10 @@ class Umount(Command):
     def take_action(self, parsed_args: Namespace) -> None:
         repos = parsed_args.repos or [repo for repo, _ in self.mounter.list_()]
         for repo in repos:
-            self.mounter.umount(repo)
-            if parsed_args.restart:
-                self.service.restart(repo)
+            try:
+                self.mounter.umount(repo)
+            except Exception:
+                self.app.LOG.exception('Error unmount repo %s', repo)
+            else:
+                if parsed_args.restart:
+                    self.service.restart(repo)
