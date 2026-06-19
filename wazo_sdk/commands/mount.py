@@ -37,10 +37,13 @@ class Mount(Command):
             try:
                 self.mounter.mount(repo)
             except Exception:
-                self.app.LOG.exception('Error unmount repo %s', repo)
+                self.app.LOG.exception('Error mount repo %s', repo)
             else:
                 if parsed_args.restart:
-                    self.service.restart(repo)
+                    try:
+                        self.service.restart(repo)
+                    except Exception:
+                        self.app.LOG.exception('Error restarting repo %s', repo)
 
         if parsed_args.list:
             mounted_repos = self.mounter.list_()
@@ -78,4 +81,7 @@ class Umount(Command):
                 self.app.LOG.exception('Error unmount repo %s', repo)
             else:
                 if parsed_args.restart:
-                    self.service.restart(repo)
+                    try:
+                        self.service.restart(repo)
+                    except Exception:
+                        self.app.LOG.exception('Error restarting repo %s', repo)
