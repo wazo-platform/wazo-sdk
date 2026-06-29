@@ -211,6 +211,8 @@ wazo-provd:
     usr/bin/dhcpd-update: /usr/sbin/dhcpd-update
   log_filename: /var/log/wazo-provd.log
   service: wazo-provd
+  clean:
+    - /usr/local/bin/wazo-provd-wait
 
 wazo-provd-cli:
   python3: true
