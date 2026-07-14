@@ -24,13 +24,18 @@ mkvirtualenv --python /usr/bin/python3 wdk
 
 ```sh
 brew install rsync # install latest
-brew install python # install python3
+brew install python@3.11 # match the Python used across Wazo (Debian Bookworm)
 # Reload your terminal session to have the latest rsync
-pip install --user virtualenvwrapper
 mkdir -p ~/.virtualenvs
-virtualenv -p python3 ~/.virtualenvs/wdk
+python3.11 -m venv ~/.virtualenvs/wdk
 source ~/.virtualenvs/wdk/bin/activate
 ```
+
+> **Note:** We pin `python@3.11` so that every contributor uses the same
+> interpreter regardless of platform. The Debian instructions above land on
+> 3.11 implicitly (it is the default `python3` on Bookworm), and the project's
+> tooling (`tox`, `mypy`, `isort`, `pyupgrade`) all target 3.11. Matching it on
+> macOS keeps everyone consistent.
 
 #### WDK Dependencies
 
