@@ -91,7 +91,8 @@ class WDK(App):
         pid_files = {f for f in files if f.endswith('.pid')}
         normal_files = set(files) - pid_files
         for f in normal_files:
-            matching_pid = f'{f}.pid'
+            base = f[: -len('.filter')] if f.endswith('.filter') else f
+            matching_pid = f'{base}.pid'
             if matching_pid in pid_files:
                 continue
 
