@@ -32,5 +32,7 @@ def gitignore_exclude_rules(repo_path: str) -> list[str]:
     negations = [
         f'+ {line[1:]}' for line in lines if line.startswith('!') and line != '!'
     ]
-    plain = [line for line in lines if not (line.startswith('!') and line != '!')]
+    plain = [
+        f'- {line}' for line in lines if not (line.startswith('!') and line != '!')
+    ]
     return negations + plain

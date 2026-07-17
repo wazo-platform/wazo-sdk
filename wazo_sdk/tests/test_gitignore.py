@@ -46,10 +46,13 @@ class TestGitignoreExcludeRules:
     def test_empty_when_no_files_present(self, tmp_path: pathlib.Path) -> None:
         assert gitignore_exclude_rules(str(tmp_path)) == []
 
-    def test_plain_lines_pass_through_verbatim(self, tmp_path: pathlib.Path) -> None:
+    def test_plain_lines_get_deny_prefix(self, tmp_path: pathlib.Path) -> None:
         (tmp_path / '.gitignore').write_text('node_modules/\n*.pyc\n')
 
-        assert gitignore_exclude_rules(str(tmp_path)) == ['node_modules/', '*.pyc']
+        assert gitignore_exclude_rules(str(tmp_path)) == [
+            '- node_modules/',
+            '- *.pyc',
+        ]
 
     def test_negation_translated_and_bucketed_first(
         self, tmp_path: pathlib.Path
@@ -58,7 +61,7 @@ class TestGitignoreExcludeRules:
 
         assert gitignore_exclude_rules(str(tmp_path)) == [
             '+ build/keep.txt',
-            'build/*',
+            '- build/*',
         ]
 
     def test_combines_git_info_exclude_and_gitignore(
@@ -74,11 +77,11 @@ class TestGitignoreExcludeRules:
         assert rules == [
             '+ important.swp',
             '+ dist/keep/',
-            '*.swp',
-            'dist/',
+            '- *.swp',
+            '- dist/',
         ]
 
-    def test_bare_lone_bang_is_not_translated(self, tmp_path: pathlib.Path) -> None:
+    def test_bare_lone_bang_gets_deny_prefix(self, tmp_path: pathlib.Path) -> None:
         (tmp_path / '.gitignore').write_text('!\nfoo\n')
 
-        assert gitignore_exclude_rules(str(tmp_path)) == ['!', 'foo']
+        assert gitignore_exclude_rules(str(tmp_path)) == ['- !', '- foo']
