@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import pathlib
+import re
 import subprocess
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -35,6 +36,33 @@ def mounter(config: MagicMock, state: MagicMock) -> Mounter:
 @pytest.fixture
 def ssh() -> MagicMock:
     return MagicMock()
+
+
+class TestComputeExcludeRules:
+    def test_combines_gitignore_config_and_project_excludes(
+        self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
+    ) -> None:
+        config.local_source = str(tmp_path)
+        mounter._local_dir = str(tmp_path)
+        config.exclude = ['.tox']
+        (tmp_path / 'my-repo').mkdir()
+        (tmp_path / 'my-repo' / '.gitignore').write_text('build/*\n!build/keep.txt\n')
+
+        rules = mounter._compute_exclude_rules('my-repo', {'exclude': ['venv']})
+
+        assert rules == ['+ build/keep.txt', '- build/*', '- .tox', '- venv']
+
+    def test_dedups_config_and_project_excludes(
+        self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
+    ) -> None:
+        config.local_source = str(tmp_path)
+        mounter._local_dir = str(tmp_path)
+        config.exclude = ['.tox', 'venv']
+        (tmp_path / 'my-repo').mkdir()
+
+        rules = mounter._compute_exclude_rules('my-repo', {'exclude': ['venv']})
+
+        assert rules == ['- .tox', '- venv']
 
 
 class TestEnsureDestExists:
@@ -178,7 +206,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='rsync'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('my-repo', 'my-repo', [])
 
         state.add_mount.assert_not_called()
 
@@ -191,7 +219,7 @@ class TestStartSync:
         proc.returncode = 0
 
         with patch('subprocess.Popen', return_value=proc):
-            mounter._start_sync('my-repo', 'my-repo')
+            mounter._start_sync('my-repo', 'my-repo', [])
 
         state.add_mount.assert_called_once()
 
@@ -210,7 +238,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('my-repo', 'my-repo', [])
 
         state.add_mount.assert_not_called()
 
@@ -230,10 +258,48 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('my-repo', 'my-repo', [])
 
         proc.kill.assert_called_once()
         state.add_mount.assert_not_called()
+
+    def test_rsync_only_command_has_one_filter_arg_per_rule(
+        self, mounter: Mounter, config: MagicMock
+    ) -> None:
+        config.rsync_only = True
+        proc = MagicMock()
+        proc.communicate.return_value = (None, None)
+        proc.returncode = 0
+
+        with patch('subprocess.Popen', return_value=proc) as popen:
+            mounter._start_sync(
+                'my-repo', 'my-repo', ['+ keep.txt', '- .git', '- node_modules']
+            )
+
+        sync_command = popen.call_args[0][0]
+        assert '--filter=+ keep.txt' in sync_command
+        assert '--filter=- .git' in sync_command
+        assert '--filter=- node_modules' in sync_command
+
+    def test_lsyncd_config_references_a_filter_file_with_the_rules(
+        self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
+    ) -> None:
+        config.rsync_only = False
+        config.cache_dir = str(tmp_path)
+        proc = MagicMock()
+        proc.communicate.return_value = (None, None)
+        proc.returncode = 0
+
+        with patch('subprocess.Popen', return_value=proc) as popen:
+            mounter._start_sync('my-repo', 'my-repo', ['+ keep.txt', '- .git'])
+
+        config_filename = popen.call_args[0][0][1]
+        rendered = pathlib.Path(config_filename).read_text()
+
+        match = re.search(r'filterFrom = "([^"]+)"', rendered)
+        assert match is not None
+        assert match.group(1) == f'{config_filename}.filter'
+        assert pathlib.Path(match.group(1)).read_text() == '+ keep.txt\n- .git\n'
 
 
 class TestIsLsyncdPid:

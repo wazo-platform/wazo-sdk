@@ -18,6 +18,7 @@ import sh
 from jinja2 import Template
 
 from wazo_sdk.config import Config
+from wazo_sdk.gitignore import gitignore_exclude_rules
 from wazo_sdk.state import State
 
 if TYPE_CHECKING:
@@ -52,7 +53,7 @@ sync {
     delay = 1,
     source = "{{ source }}",
     target = "{{ host }}:{{ destination }}",
-    exclude = {'.git', '.tox', 'node_modules'},
+    filterFrom = "{{ filter_file }}",
     rsync = {
         xattrs = true,
         archive = true,
@@ -62,12 +63,11 @@ sync {
 '''
 )
 
-RSYNC_OPTIONS = [
+RSYNC_BASE_OPTIONS = [
     '--xattrs',
     '--archive',
     '--perms',
     '--delete',
-    "--exclude={'.git','.tox','node_modules'}",
 ]
 
 
@@ -125,6 +125,18 @@ class Mounter:
             return False
         return self._is_sync_running(mount)
 
+    def _compute_exclude_rules(
+        self, local_repo_name: str, repo_config: ProjectConfigData
+    ) -> list[str]:
+        local_path = os.path.join(self._local_dir, local_repo_name)
+        denies = dict.fromkeys(
+            [*self._config.exclude, *(repo_config.get('exclude') or [])]
+        )
+        return [
+            *gitignore_exclude_rules(local_path),
+            *(f'- {pattern}' for pattern in denies),
+        ]
+
     def mount(self, repo_name: str) -> None:
         if not self._hostname:
             raise Exception('The remote hostname is required to mount directories')
@@ -136,14 +148,15 @@ class Mounter:
 
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
+        repo_config = self._config.get_project(real_repo_name)
 
         # Skip sync if lsync is already running (rsync-only always re-syncs)
         if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
-            self._start_sync(local_repo_name, real_repo_name)
+            exclude_rules = self._compute_exclude_rules(local_repo_name, repo_config)
+            self._start_sync(local_repo_name, real_repo_name, exclude_rules)
 
-        repo_config = self._config.get_project(real_repo_name)
         self._apply_mount(real_repo_name, repo_config)
 
     def umount(self, repo_name: str) -> None:
@@ -256,7 +269,9 @@ class Mounter:
     def _wait_for_file(self, ssh: sh.Command, filename: str) -> None:
         ssh(f'while [ ! -e {shlex.quote(filename)} ]; do sleep 0.2; done')
 
-    def _start_sync(self, local_repo_name: str, real_repo_name: str) -> None:
+    def _start_sync(
+        self, local_repo_name: str, real_repo_name: str, exclude_rules: list[str]
+    ) -> None:
         local_path = os.path.join(self._local_dir, local_repo_name)
         remote_path = os.path.join(self._remote_dir, real_repo_name)
         config_filename: str | None = None
@@ -266,19 +281,28 @@ class Mounter:
         if self._config.rsync_only:
             sync_command = [
                 'rsync',
-                *RSYNC_OPTIONS,
+                *RSYNC_BASE_OPTIONS,
+                *(f'--filter={rule}' for rule in exclude_rules),
                 f'{local_path}/',
                 f'{self._hostname}:{remote_path}/',
             ]
         else:
-            config = LSYNC_CONFIG_TEMPLATE.render(
-                source=local_path, host=self._hostname, destination=remote_path
-            )
-
             with tempfile.NamedTemporaryFile(
                 mode='w', dir=self._config.cache_dir, delete=False
             ) as f:
                 config_filename = f.name
+
+            filter_filename = f'{config_filename}.filter'
+            with open(filter_filename, 'w') as f:
+                f.write(''.join(f'{rule}\n' for rule in exclude_rules))
+
+            config = LSYNC_CONFIG_TEMPLATE.render(
+                source=local_path,
+                host=self._hostname,
+                destination=remote_path,
+                filter_file=filter_filename,
+            )
+            with open(config_filename, 'w') as f:
                 f.write(config)
 
             pid_filename = f'{config_filename}.pid'
