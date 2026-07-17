@@ -72,6 +72,23 @@ The default location of the configuration file is `~/.config/wdk/config.yml` you
 If you wish to use another location for you configuration file you can use the `--config` flag
 when launching `wdk` or set the `WDK_CONFIG_FILE` environment variable to the config file location.
 
+### Excluding files from sync
+
+By default `wdk mount` never syncs `.git`, `.tox`, or `node_modules`. It also automatically reads
+each project's own `.gitignore` and `.git/info/exclude` (from the local checkout) and skips
+whatever they ignore, including `!`-negated exceptions. This is read once when the project is
+mounted, so changes to `.gitignore` require a remount to take effect.
+
+You can add more patterns to exclude, on top of the defaults, in `config.yml`:
+
+```yml
+exclude:
+  - "*.swp"
+```
+
+This applies to every project. To exclude additional patterns for a single project only, use the
+project file's `exclude` key (see below).
+
 ### Project configuration
 
 Until everything can be guessed from the projects source code some information have to be configured
@@ -88,12 +105,15 @@ The project file has the following structure
   clean:
     - </file/to/remove/when/done>
   log_filename: <path-to-filename.log>  # default to /var/log/<project name>.log
+  exclude:
+    - <pattern to also exclude from sync, on top of the global list>
 ```
 
 * project name: This is the name that matches your local source directory. ex: `wazo-auth`
 * python3: This will do a `python3 setup.py develop` when this project is mounted.
 * binds: This is a map of source and destination file/directory that should be overridden.
 * clean: A list of files to delete when unmounting the project.
+* exclude: A list of additional patterns to exclude from sync, specific to this project.
 
 Note that using bind on files will not follow changes to the file. If you use a bind on a
 configuration file for example the mount will have to be redone when you change the configuration
