@@ -65,6 +65,66 @@ class TestComputeExcludeRules:
         assert rules == ['- .tox', '- venv']
 
 
+class TestMount:
+    def test_stops_existing_sync_before_restarting_when_already_mounted(
+        self, mounter: Mounter, config: MagicMock
+    ) -> None:
+        config.get_project_name.return_value = 'wazo-my-repo'
+        config.get_project.return_value = {}
+
+        with (
+            patch.object(mounter, '_find_local_repo_name', return_value='wazo-my-repo'),
+            patch.object(mounter, '_is_mounted', return_value=True),
+            patch.object(mounter, '_stop_sync') as stop_sync,
+            patch.object(mounter, '_compute_exclude_rules', return_value=['- .git']),
+            patch.object(mounter, '_start_sync') as start_sync,
+            patch.object(mounter, '_apply_mount'),
+        ):
+            mounter.mount('my-repo')
+
+        stop_sync.assert_called_once_with('wazo-my-repo')
+        start_sync.assert_called_once_with('wazo-my-repo', 'wazo-my-repo', ['- .git'])
+
+    def test_does_not_stop_sync_when_not_already_mounted(
+        self, mounter: Mounter, config: MagicMock
+    ) -> None:
+        config.get_project_name.return_value = 'wazo-my-repo'
+        config.get_project.return_value = {}
+
+        with (
+            patch.object(mounter, '_find_local_repo_name', return_value='wazo-my-repo'),
+            patch.object(mounter, '_is_mounted', return_value=False),
+            patch.object(mounter, '_stop_sync') as stop_sync,
+            patch.object(mounter, '_compute_exclude_rules', return_value=[]),
+            patch.object(mounter, '_start_sync') as start_sync,
+            patch.object(mounter, '_apply_mount'),
+        ):
+            mounter.mount('my-repo')
+
+        stop_sync.assert_not_called()
+        start_sync.assert_called_once()
+
+    def test_always_restarts_even_when_rsync_only(
+        self, mounter: Mounter, config: MagicMock
+    ) -> None:
+        config.rsync_only = True
+        config.get_project_name.return_value = 'wazo-my-repo'
+        config.get_project.return_value = {}
+
+        with (
+            patch.object(mounter, '_find_local_repo_name', return_value='wazo-my-repo'),
+            patch.object(mounter, '_is_mounted', return_value=True),
+            patch.object(mounter, '_stop_sync') as stop_sync,
+            patch.object(mounter, '_compute_exclude_rules', return_value=[]),
+            patch.object(mounter, '_start_sync') as start_sync,
+            patch.object(mounter, '_apply_mount'),
+        ):
+            mounter.mount('my-repo')
+
+        stop_sync.assert_called_once_with('wazo-my-repo')
+        start_sync.assert_called_once()
+
+
 class TestEnsureDestExists:
     def test_creates_directory_when_source_is_directory(
         self, mounter: Mounter, ssh: MagicMock

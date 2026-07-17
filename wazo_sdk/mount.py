@@ -119,12 +119,6 @@ class Mounter:
     def _is_mounted(self, repo_name: str) -> bool:
         return self._state.is_mounted(self._hostname, repo_name)
 
-    def _is_mounted_and_running(self, repo_name: str) -> bool:
-        mount = self._state.get_mount(self._hostname, repo_name)
-        if not mount:
-            return False
-        return self._is_sync_running(mount)
-
     def _compute_exclude_rules(
         self, local_repo_name: str, repo_config: ProjectConfigData
     ) -> list[str]:
@@ -150,12 +144,12 @@ class Mounter:
         real_repo_name = self._config.get_project_name(repo_name)
         repo_config = self._config.get_project(real_repo_name)
 
-        # Skip sync if lsync is already running (rsync-only always re-syncs)
-        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
-            self.logger.debug('%s is already mounted', real_repo_name)
-        else:
-            exclude_rules = self._compute_exclude_rules(local_repo_name, repo_config)
-            self._start_sync(local_repo_name, real_repo_name, exclude_rules)
+        # Always restart so the sync picks up the freshly computed exclude rules
+        if self._is_mounted(real_repo_name):
+            self._stop_sync(real_repo_name)
+
+        exclude_rules = self._compute_exclude_rules(local_repo_name, repo_config)
+        self._start_sync(local_repo_name, real_repo_name, exclude_rules)
 
         self._apply_mount(real_repo_name, repo_config)
 
