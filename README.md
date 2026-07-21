@@ -11,6 +11,9 @@ commands. If you're running macOS, lsyncd won't work, so you must set the `rsync
 
 The recommended way to install `wdk` is to use a virtual environment.
 
+> **Note:** Python 3.11 is assumed as the interpreter, for consistency with the
+> Python components in the current Bookworm-based Wazo releases.
+
 #### Debian Instructions
 
 ```sh
@@ -24,18 +27,12 @@ mkvirtualenv --python /usr/bin/python3 wdk
 
 ```sh
 brew install rsync # install latest
-brew install python@3.11 # match the Python used across Wazo (Debian Bookworm)
+brew install python@3.11
 # Reload your terminal session to have the latest rsync
 mkdir -p ~/.virtualenvs
 python3.11 -m venv ~/.virtualenvs/wdk
 source ~/.virtualenvs/wdk/bin/activate
 ```
-
-> **Note:** We pin `python@3.11` so that every contributor uses the same
-> interpreter regardless of platform. The Debian instructions above land on
-> 3.11 implicitly (it is the default `python3` on Bookworm), and the project's
-> tooling (`tox`, `mypy`, `isort`, `pyupgrade`) all target 3.11. Matching it on
-> macOS keeps everyone consistent.
 
 #### WDK Dependencies
 
