@@ -127,8 +127,8 @@ class Mounter:
             [*self._config.exclude, *(repo_config.get('exclude') or [])]
         )
         return [
-            *gitignore_exclude_rules(local_path),
             *(f'- {pattern}' for pattern in denies),
+            *gitignore_exclude_rules(local_path),
         ]
 
     def mount(self, repo_name: str) -> None:

@@ -51,7 +51,7 @@ class TestComputeExcludeRules:
 
         rules = mounter._compute_exclude_rules('my-repo', {'exclude': ['venv']})
 
-        assert rules == ['+ build/keep.txt', '- build/*', '- .tox', '- venv']
+        assert rules == ['- .tox', '- venv', '+ build/keep.txt', '- build/*']
 
     def test_dedups_config_and_project_excludes(
         self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
@@ -64,6 +64,23 @@ class TestComputeExcludeRules:
         rules = mounter._compute_exclude_rules('my-repo', {'exclude': ['venv']})
 
         assert rules == ['- .tox', '- venv']
+
+    def test_config_deny_wins_over_gitignore_include(
+        self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
+    ) -> None:
+        config.local_source = str(tmp_path)
+        mounter._local_dir = str(tmp_path)
+        config.exclude = ['node_modules']
+        (tmp_path / 'my-repo').mkdir()
+        (tmp_path / 'my-repo' / '.gitignore').write_text(
+            'node_modules/\n!node_modules/keep-me/\n'
+        )
+
+        rules = mounter._compute_exclude_rules('my-repo', {})
+
+        deny_index = rules.index('- node_modules')
+        include_index = rules.index('+ node_modules/keep-me/')
+        assert deny_index < include_index
 
 
 class TestMount:

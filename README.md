@@ -79,6 +79,10 @@ each project's own `.gitignore` and `.git/info/exclude` (from the local checkout
 whatever they ignore, including `!`-negated exceptions. This is read once when the project is
 mounted, so changes to `.gitignore` require a remount to take effect.
 
+The built-in defaults and any `exclude:` patterns (global or per-project) always take priority
+over `.gitignore`: a `!`-negated exception in a project's `.gitignore` cannot resurrect a file or
+directory that the defaults or your own `exclude:` configuration excludes.
+
 You can add more patterns to exclude, on top of the defaults, in `config.yml`:
 
 ```yml
