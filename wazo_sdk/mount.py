@@ -327,12 +327,12 @@ class Mounter:
             self.logger.error('failed to find a matching mount to stop')
             return
 
-        if not self._config.rsync_only:
-            pid_filename: str | None = mount['lsync_pidfile']
+        pid_filename: str | None = mount['lsync_pidfile']
+        if pid_filename:
             pid = None
 
             try:
-                with open(pid_filename) as f:  # type: ignore[arg-type]
+                with open(pid_filename) as f:
                     pid = int(f.read())
             except OSError as ex:
                 self.logger.error('failed to read pidfile (%s): %s', pid_filename, ex)
@@ -343,11 +343,10 @@ class Mounter:
                 except OSError as ex:
                     self.logger.error('failed to kill %s: %s', pid, ex)
 
-            if pid_filename:
-                try:
-                    os.unlink(pid_filename)
-                except OSError:
-                    pass
+            try:
+                os.unlink(pid_filename)
+            except OSError:
+                pass
 
         self._state.remove_mount(self._hostname, repo_name)
 

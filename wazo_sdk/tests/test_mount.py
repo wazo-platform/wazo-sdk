@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pathlib
 import re
+import signal
 import subprocess
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -459,6 +460,46 @@ class TestStopSync:
         mounter._stop_sync('my-repo')
 
         state.remove_mount.assert_not_called()
+
+    def test_none_pidfile_does_not_crash_when_rsync_only_flag_changed(
+        self, mounter: Mounter, config: MagicMock, state: MagicMock
+    ) -> None:
+        # mount was recorded under rsync_only=True (no pidfile), but the
+        # current invocation runs with rsync_only=False
+        config.rsync_only = False
+        state.get_mount.return_value = {
+            'project': 'my-repo',
+            'lsync_config': None,
+            'lsync_pidfile': None,
+        }
+
+        mounter._stop_sync('my-repo')
+
+        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+
+    def test_kills_process_even_if_rsync_only_flag_changed(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        # mount was recorded under rsync_only=False (real pidfile), but the
+        # current invocation runs with rsync_only=True
+        pid_file = tmp_path / 'lsyncd.pid'
+        pid_file.write_text('99999')
+        config.rsync_only = True
+        state.get_mount.return_value = {
+            'project': 'my-repo',
+            'lsync_config': str(tmp_path / 'config'),
+            'lsync_pidfile': str(pid_file),
+        }
+
+        with patch('os.kill') as kill:
+            mounter._stop_sync('my-repo')
+
+        kill.assert_called_once_with(99999, signal.SIGTERM)
+        assert not pid_file.exists()
 
 
 class TestBindFilesErrorPaths:
