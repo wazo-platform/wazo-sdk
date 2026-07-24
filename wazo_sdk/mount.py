@@ -307,11 +307,25 @@ class Mounter:
                 )
         except subprocess.TimeoutExpired:
             proc.kill()
+            self._cleanup_sync_files(config_filename, pid_filename)
             raise SyncError(f'{sync_command[0]} did not daemonize within timeout')
+        except SyncError:
+            self._cleanup_sync_files(config_filename, pid_filename)
+            raise
 
         self._state.add_mount(
             self._hostname, real_repo_name, config_filename, pid_filename
         )
+
+    def _cleanup_sync_files(
+        self, config_filename: str | None, pid_filename: str | None
+    ) -> None:
+        for path in (config_filename, pid_filename):
+            if path:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
 
     def _stop_sync(self, repo_name: str) -> None:
         mount = self._state.get_mount(self._hostname, repo_name)

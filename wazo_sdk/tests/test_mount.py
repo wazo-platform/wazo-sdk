@@ -235,6 +235,45 @@ class TestStartSync:
         proc.kill.assert_called_once()
         state.add_mount.assert_not_called()
 
+    def test_lsyncd_failure_unlinks_config_file(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        config.cache_dir = str(tmp_path)
+        proc = MagicMock()
+        proc.communicate.return_value = (None, b'lsyncd: bad config')
+        proc.returncode = 1
+
+        with patch('subprocess.Popen', return_value=proc):
+            with pytest.raises(SyncError, match='lsyncd'):
+                mounter._start_sync('my-repo', 'my-repo')
+
+        assert list(tmp_path.iterdir()) == []
+
+    def test_lsyncd_timeout_unlinks_config_file(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        config.cache_dir = str(tmp_path)
+        proc = MagicMock()
+        proc.communicate.side_effect = subprocess.TimeoutExpired(
+            cmd='lsyncd', timeout=1
+        )
+
+        with patch('subprocess.Popen', return_value=proc):
+            with pytest.raises(SyncError):
+                mounter._start_sync('my-repo', 'my-repo')
+
+        assert list(tmp_path.iterdir()) == []
+
 
 class TestIsLsyncdPid:
     def test_returns_false_when_pid_not_running(self) -> None:
