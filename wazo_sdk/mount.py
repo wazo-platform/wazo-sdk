@@ -329,11 +329,12 @@ class Mounter:
                 except OSError as ex:
                     self.logger.error('failed to kill %s: %s', pid, ex)
 
-            if pid_filename:
-                try:
-                    os.unlink(pid_filename)
-                except OSError:
-                    pass
+            for path in (pid_filename, mount['lsync_config']):
+                if path:
+                    try:
+                        os.unlink(path)
+                    except OSError:
+                        pass
 
         self._state.remove_mount(self._hostname, repo_name)
 

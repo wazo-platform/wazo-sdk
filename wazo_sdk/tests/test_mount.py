@@ -368,6 +368,29 @@ class TestStopSync:
 
         state.remove_mount.assert_called_once_with('test-host', 'my-repo')
 
+    def test_deletes_lsync_config_on_stop(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        pid_file = tmp_path / 'lsyncd.pid'
+        pid_file.write_text('99999')
+        config_file = tmp_path / 'config'
+        config_file.write_text('sync {}')
+        config.rsync_only = False
+        state.get_mount.return_value = {
+            'project': 'my-repo',
+            'lsync_config': str(config_file),
+            'lsync_pidfile': str(pid_file),
+        }
+
+        with patch('os.kill'):
+            mounter._stop_sync('my-repo')
+
+        assert not config_file.exists()
+
 
 class TestBindFilesErrorPaths:
     def test_wait_for_file_failure_skips_ensure_and_mount(
