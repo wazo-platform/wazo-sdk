@@ -18,6 +18,12 @@ cache_dir: ~/.local/cache/wdk
 
 rsync_only: false
 
+# Additional patterns to exclude from sync, on top of the built-in defaults
+# ('.git', '.tox', 'node_modules') and each project's own .gitignore /
+# .git/info/exclude (read automatically).
+exclude:
+  - "*.swp"
+
 # Your GitHub credentials. The token needs only read access.
 github_username: john
 github_token: 123456789abcdef0123456789abcdef012345678

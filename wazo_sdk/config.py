@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
 DEFAULT_INIT_PACKAGES = ['python3-pip', 'rsync']
+DEFAULT_EXCLUDES = ['.git', '.tox', 'node_modules']
 
 if TYPE_CHECKING:
     from typing import TypedDict
@@ -33,14 +34,16 @@ if TYPE_CHECKING:
         github_token: str | None
         github_orgs: list[str]
         init: InitConfigData
+        exclude: list[str]
 
-    class ProjectConfigData(TypedDict):
+    class ProjectConfigData(TypedDict, total=False):
         python2: bool
         python3: bool
         log_filename: str | None
         service: str | None
         clean: list[str]
         bind: dict[str, str]
+        exclude: list[str]
 
 
 class Config:
@@ -108,6 +111,11 @@ class Config:
     @property
     def init_packages(self) -> list[str]:
         return self._file_config.get('init', {}).get('packages', DEFAULT_INIT_PACKAGES)
+
+    @property
+    def exclude(self) -> list[str]:
+        extra = self._file_config.get('exclude') or []
+        return list(dict.fromkeys([*DEFAULT_EXCLUDES, *extra]))
 
     def get_project(self, short_name: str) -> ProjectConfigData:
         name = self.get_project_name(short_name)
