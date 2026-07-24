@@ -224,9 +224,10 @@ class TestStartSync:
         config.rsync_only = False
         config.cache_dir = str(tmp_path)
         proc = MagicMock()
-        proc.communicate.side_effect = subprocess.TimeoutExpired(
-            cmd='lsyncd', timeout=1
-        )
+        proc.communicate.side_effect = [
+            subprocess.TimeoutExpired(cmd='lsyncd', timeout=1),
+            (None, None),
+        ]
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
@@ -234,6 +235,50 @@ class TestStartSync:
 
         proc.kill.assert_called_once()
         state.add_mount.assert_not_called()
+
+    def test_lsyncd_timeout_reaps_process(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        config.cache_dir = str(tmp_path)
+        proc = MagicMock()
+        proc.communicate.side_effect = [
+            subprocess.TimeoutExpired(cmd='lsyncd', timeout=1),
+            (None, None),
+        ]
+
+        with patch('subprocess.Popen', return_value=proc):
+            with pytest.raises(SyncError):
+                mounter._start_sync('my-repo', 'my-repo')
+
+        assert proc.communicate.call_count == 2
+
+    def test_lsyncd_timeout_does_not_chain_traceback(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        config.cache_dir = str(tmp_path)
+        proc = MagicMock()
+        proc.communicate.side_effect = [
+            subprocess.TimeoutExpired(cmd='lsyncd', timeout=1),
+            (None, None),
+        ]
+
+        with patch('subprocess.Popen', return_value=proc):
+            try:
+                mounter._start_sync('my-repo', 'my-repo')
+            except SyncError as exc:
+                assert exc.__suppress_context__ is True
+            else:
+                pytest.fail('SyncError was not raised')
 
     def test_lsyncd_failure_unlinks_config_file(
         self,
@@ -264,9 +309,10 @@ class TestStartSync:
         config.rsync_only = False
         config.cache_dir = str(tmp_path)
         proc = MagicMock()
-        proc.communicate.side_effect = subprocess.TimeoutExpired(
-            cmd='lsyncd', timeout=1
-        )
+        proc.communicate.side_effect = [
+            subprocess.TimeoutExpired(cmd='lsyncd', timeout=1),
+            (None, None),
+        ]
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError):

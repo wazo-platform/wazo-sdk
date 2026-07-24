@@ -307,8 +307,11 @@ class Mounter:
                 )
         except subprocess.TimeoutExpired:
             proc.kill()
+            proc.communicate()
             self._cleanup_sync_files(config_filename, pid_filename)
-            raise SyncError(f'{sync_command[0]} did not daemonize within timeout')
+            raise SyncError(
+                f'{sync_command[0]} did not daemonize within timeout'
+            ) from None
         except SyncError:
             self._cleanup_sync_files(config_filename, pid_filename)
             raise
