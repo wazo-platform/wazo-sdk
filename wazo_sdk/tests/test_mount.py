@@ -168,6 +168,26 @@ class TestBindFiles:
 
 
 class TestStartSync:
+    def test_rsync_command_excludes_are_separate_args(
+        self, mounter: Mounter, config: MagicMock
+    ) -> None:
+        # subprocess.Popen runs argv directly (no shell), so a single
+        # "--exclude={'a','b'}" arg is passed to rsync literally and
+        # excludes nothing; each pattern must be its own --exclude arg.
+        config.rsync_only = True
+        proc = MagicMock()
+        proc.communicate.return_value = (None, None)
+        proc.returncode = 0
+
+        with patch('subprocess.Popen', return_value=proc) as popen:
+            mounter._start_sync('my-repo', 'my-repo')
+
+        command = popen.call_args[0][0]
+        assert '--exclude=.git' in command
+        assert '--exclude=.tox' in command
+        assert '--exclude=node_modules' in command
+        assert not any('{' in arg for arg in command)
+
     def test_rsync_failure_raises(
         self, mounter: Mounter, config: MagicMock, state: MagicMock
     ) -> None:

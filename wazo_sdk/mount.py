@@ -76,7 +76,9 @@ RSYNC_OPTIONS = [
     '--archive',
     '--perms',
     '--delete',
-    "--exclude={'.git','.tox','node_modules'}",
+    '--exclude=.git',
+    '--exclude=.tox',
+    '--exclude=node_modules',
 ]
 
 
