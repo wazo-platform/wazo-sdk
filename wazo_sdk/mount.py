@@ -299,6 +299,7 @@ class Mounter:
 
         self.logger.debug('%s', ' '.join(sync_command))
         proc = subprocess.Popen(sync_command, stderr=subprocess.PIPE)
+        success = False
         try:
             _, errs = proc.communicate(**communicate_kwargs)
             if proc.returncode != 0:
@@ -307,16 +308,16 @@ class Mounter:
                     f'{sync_command[0]} failed (exit {proc.returncode})'
                     + (f': {stderr_msg}' if stderr_msg else '')
                 )
+            success = True
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.communicate()
-            self._cleanup_sync_files(config_filename, pid_filename)
             raise SyncError(
                 f'{sync_command[0]} did not daemonize within timeout'
             ) from None
-        except SyncError:
-            self._cleanup_sync_files(config_filename, pid_filename)
-            raise
+        finally:
+            if not success:
+                self._cleanup_sync_files(config_filename, pid_filename)
 
         self._state.add_mount(
             self._hostname, real_repo_name, config_filename, pid_filename
