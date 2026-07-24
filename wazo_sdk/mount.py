@@ -32,6 +32,15 @@ class SyncError(Exception):
     pass
 
 
+def read_pidfile(path: str) -> int | None:
+    try:
+        with open(path) as f:
+            return int(f.read().strip())
+    except (OSError, ValueError) as ex:
+        _logger.debug('error reading pidfile %s: %s', path, ex)
+        return None
+
+
 def is_lsyncd_pid(pid: int) -> bool:
     if pid not in psutil.pids():
         return False
@@ -107,11 +116,12 @@ class Mounter:
         if self._config.rsync_only:
             return True
 
-        pid_filename: str = mount['lsync_pidfile']  # type: ignore
-        try:
-            with open(pid_filename) as f:
-                pid = int(f.read())
-        except OSError:
+        pid_filename = mount['lsync_pidfile']
+        if not pid_filename:
+            return False
+
+        pid = read_pidfile(pid_filename)
+        if pid is None:
             return False
 
         return is_lsyncd_pid(pid)
@@ -310,14 +320,8 @@ class Mounter:
             return
 
         if not self._config.rsync_only:
-            pid_filename: str | None = mount['lsync_pidfile']
-            pid = None
-
-            try:
-                with open(pid_filename) as f:  # type: ignore[arg-type]
-                    pid = int(f.read())
-            except OSError as ex:
-                self.logger.error('failed to read pidfile (%s): %s', pid_filename, ex)
+            pid_filename = mount['lsync_pidfile']
+            pid = read_pidfile(pid_filename) if pid_filename else None
 
             if pid:
                 try:

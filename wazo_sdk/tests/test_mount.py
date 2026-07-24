@@ -334,6 +334,40 @@ class TestStopSync:
 
         state.remove_mount.assert_not_called()
 
+    def test_removes_state_when_pidfile_is_none(
+        self, mounter: Mounter, config: MagicMock, state: MagicMock
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = {
+            'project': 'my-repo',
+            'lsync_config': None,
+            'lsync_pidfile': None,
+        }
+
+        mounter._stop_sync('my-repo')
+
+        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+
+    def test_removes_state_when_pidfile_content_is_invalid(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        pid_file = tmp_path / 'lsyncd.pid'
+        pid_file.write_text('not-a-pid')
+        config.rsync_only = False
+        state.get_mount.return_value = {
+            'project': 'my-repo',
+            'lsync_config': str(tmp_path / 'config'),
+            'lsync_pidfile': str(pid_file),
+        }
+
+        mounter._stop_sync('my-repo')
+
+        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+
 
 class TestBindFilesErrorPaths:
     def test_wait_for_file_failure_skips_ensure_and_mount(

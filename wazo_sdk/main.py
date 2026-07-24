@@ -14,7 +14,7 @@ from cliff.command import Command
 from cliff.commandmanager import CommandManager
 
 from wazo_sdk.config import Config
-from wazo_sdk.mount import Mounter, is_lsyncd_pid
+from wazo_sdk.mount import Mounter, is_lsyncd_pid, read_pidfile
 from wazo_sdk.service import ServiceManager
 from wazo_sdk.state import State
 
@@ -116,11 +116,8 @@ class WDK(App):
                 pass
 
     def _is_lsyncd_pidfile_live(self, path: str) -> bool:
-        try:
-            with open(path) as f:
-                pid = int(f.read().strip())
-        except (OSError, ValueError) as ex:
-            self.LOG.debug("error reading pidfile %s: %s", path, ex)
+        pid = read_pidfile(path)
+        if pid is None:
             return False
         return is_lsyncd_pid(pid)
 
