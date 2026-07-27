@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import shlex
 import signal
@@ -24,6 +25,34 @@ if TYPE_CHECKING:
     from wazo_sdk.state import MountData
 
 
+_logger = logging.getLogger(__name__)
+
+
+class SyncError(Exception):
+    pass
+
+
+def read_pidfile(path: str) -> int | None:
+    try:
+        with open(path) as f:
+            return int(f.read().strip())
+    except (OSError, ValueError) as ex:
+        _logger.debug('error reading pidfile %s: %s', path, ex)
+        return None
+
+
+def is_lsyncd_pid(pid: int) -> bool:
+    if pid not in psutil.pids():
+        return False
+    try:
+        with open(os.path.join('/proc', str(pid), 'status')) as f:
+            _, cmd = f.readline().strip().rsplit('\t', 1)
+            return cmd == 'lsyncd'
+    except OSError as e:
+        _logger.warning('could not read /proc/%s/status: %s', pid, e)
+        return False
+
+
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
 LSYNC_CONFIG_TEMPLATE = Template(
     '''\
@@ -32,7 +61,7 @@ sync {
     delay = 1,
     source = "{{ source }}",
     target = "{{ host }}:{{ destination }}",
-    exclude = {'.git', '.tox', 'node_modules'},
+    exclude = {'.git', '.tox', 'node_modules', '__pycache__', '*.pyc'},
     rsync = {
         xattrs = true,
         archive = true,
@@ -47,7 +76,11 @@ RSYNC_OPTIONS = [
     '--archive',
     '--perms',
     '--delete',
-    "--exclude={'.git','.tox','node_modules'}",
+    '--exclude=.git',
+    '--exclude=.tox',
+    '--exclude=node_modules',
+    '--exclude=__pycache__',
+    '--exclude=*.pyc',
 ]
 
 
@@ -87,22 +120,15 @@ class Mounter:
         if self._config.rsync_only:
             return True
 
-        pid_filename: str = mount['lsync_pidfile']  # type: ignore
-        try:
-            with open(pid_filename) as f:
-                pid = int(f.read())
-        except OSError:
+        pid_filename = mount['lsync_pidfile']
+        if not pid_filename:
             return False
 
-        if pid not in psutil.pids():
+        pid = read_pidfile(pid_filename)
+        if pid is None:
             return False
 
-        try:
-            with open(os.path.join('/proc', str(pid), 'status')) as f:
-                _, cmd = f.readline().strip().rsplit('\t', 1)
-                return cmd == 'lsyncd'
-        except OSError:
-            return False
+        return is_lsyncd_pid(pid)
 
     def _is_mounted(self, repo_name: str) -> bool:
         return self._state.is_mounted(self._hostname, repo_name)
@@ -125,8 +151,7 @@ class Mounter:
         local_repo_name = self._find_local_repo_name(repo_name)
         real_repo_name = self._config.get_project_name(repo_name)
 
-        # Skip this condition if we are in rsync only mode,
-        # because files a not synced automatically
+        # Skip sync if lsync is already running (rsync-only always re-syncs)
         if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
             self.logger.debug('%s is already mounted', real_repo_name)
         else:
@@ -274,21 +299,41 @@ class Mounter:
             sync_command = ['lsyncd', config_filename, '--pidfile', pid_filename]
             communicate_kwargs = {'timeout': 1}
 
-        # Run sync command
         self.logger.debug('%s', ' '.join(sync_command))
-        proc = subprocess.Popen(sync_command)
+        proc = subprocess.Popen(sync_command, stderr=subprocess.PIPE)
+        success = False
         try:
-            outs, errs = proc.communicate(**communicate_kwargs)
-            if errs:
-                self.logger.info('%s failed %s', ' '.join(sync_command), errs)
-                return
+            _, errs = proc.communicate(**communicate_kwargs)
+            if proc.returncode != 0:
+                stderr_msg = errs.decode(errors='replace').strip() if errs else ''
+                raise SyncError(
+                    f'{sync_command[0]} failed (exit {proc.returncode})'
+                    + (f': {stderr_msg}' if stderr_msg else '')
+                )
+            success = True
         except subprocess.TimeoutExpired:
-            self.logger.info('%s failed %s', ' '.join(sync_command), 'timeout')
-            return
+            proc.kill()
+            proc.communicate()
+            raise SyncError(
+                f'{sync_command[0]} did not daemonize within timeout'
+            ) from None
+        finally:
+            if not success:
+                self._cleanup_sync_files(config_filename, pid_filename)
 
         self._state.add_mount(
             self._hostname, real_repo_name, config_filename, pid_filename
         )
+
+    def _cleanup_sync_files(
+        self, config_filename: str | None, pid_filename: str | None
+    ) -> None:
+        for path in (config_filename, pid_filename):
+            if path:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
 
     def _stop_sync(self, repo_name: str) -> None:
         mount = self._state.get_mount(self._hostname, repo_name)
@@ -296,28 +341,24 @@ class Mounter:
             self.logger.error('failed to find a matching mount to stop')
             return
 
+        if not self._config.rsync_only:
+            pid_filename = mount['lsync_pidfile']
+            pid = read_pidfile(pid_filename) if pid_filename else None
+
+            if pid:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except OSError as ex:
+                    self.logger.error('failed to kill %s: %s', pid, ex)
+
+            for path in (pid_filename, mount['lsync_config']):
+                if path:
+                    try:
+                        os.unlink(path)
+                    except OSError:
+                        pass
+
         self._state.remove_mount(self._hostname, repo_name)
-
-        if self._config.rsync_only:
-            return
-
-        self._stop_lsync(mount)
-
-    def _stop_lsync(self, mount: MountData) -> None:
-        pid_filename: str = mount['lsync_pidfile']  # type: ignore
-        pid = None
-
-        try:
-            with open(pid_filename) as f:
-                pid = int(f.read())
-        except OSError:
-            self.logger.error('failed to find pidfile')
-
-        if pid:
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except OSError:
-                self.logger.error('failed to kill %s', pid)
 
     def _find_local_repo_name(self, repo_name: str) -> str:
         for prefix in REPO_PREFIX:
