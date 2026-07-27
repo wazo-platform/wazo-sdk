@@ -186,6 +186,8 @@ class TestStartSync:
         assert '--exclude=.git' in command
         assert '--exclude=.tox' in command
         assert '--exclude=node_modules' in command
+        assert '--exclude=__pycache__' in command
+        assert '--exclude=*.pyc' in command
         assert not any('{' in arg for arg in command)
 
     def test_rsync_failure_raises(

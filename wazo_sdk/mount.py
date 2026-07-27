@@ -61,7 +61,7 @@ sync {
     delay = 1,
     source = "{{ source }}",
     target = "{{ host }}:{{ destination }}",
-    exclude = {'.git', '.tox', 'node_modules'},
+    exclude = {'.git', '.tox', 'node_modules', '__pycache__', '*.pyc'},
     rsync = {
         xattrs = true,
         archive = true,
@@ -79,6 +79,8 @@ RSYNC_OPTIONS = [
     '--exclude=.git',
     '--exclude=.tox',
     '--exclude=node_modules',
+    '--exclude=__pycache__',
+    '--exclude=*.pyc',
 ]
 
 
