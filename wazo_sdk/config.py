@@ -1,10 +1,11 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
 
 import os
 from argparse import Namespace
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 import yaml
@@ -41,6 +42,44 @@ if TYPE_CHECKING:
         service: str | None
         clean: list[str]
         bind: dict[str, str]
+
+
+class ProjectConfigError(Exception):
+    pass
+
+
+@dataclass
+class Project:
+    name: str
+    python2: bool = False
+    python3: bool = False
+    log_filename: str | None = None
+    service: str | None = None
+    clean: list[str] = field(default_factory=list)
+    bind: dict[str, str] = field(default_factory=dict)
+    source_file: str = ''
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.bind, dict):
+            raise ProjectConfigError(
+                self._error(
+                    "'bind' must be a mapping of local path to remote path",
+                    self.bind,
+                )
+                + " (a missing space after ':' folds a YAML mapping into a string)"
+            )
+
+        if not isinstance(self.clean, list):
+            raise ProjectConfigError(
+                self._error("'clean' must be a list of paths", self.clean)
+            )
+
+    def _error(self, message: str, value: object) -> str:
+        location = f' in {self.source_file}' if self.source_file else ''
+        return (
+            f"malformed project '{self.name}'{location}: {message}, "
+            f'got {type(value).__name__}: {value!r}'
+        )
 
 
 class Config:
@@ -109,9 +148,15 @@ class Config:
     def init_packages(self) -> list[str]:
         return self._file_config.get('init', {}).get('packages', DEFAULT_INIT_PACKAGES)
 
-    def get_project(self, short_name: str) -> ProjectConfigData:
+    def get_project(self, short_name: str) -> Project:
         name = self.get_project_name(short_name)
-        return self._project_config[name]
+        raw = self._project_config[name] or {}
+        try:
+            return Project(name=name, source_file=self.project_file, **raw)
+        except TypeError as ex:
+            raise ProjectConfigError(
+                f"malformed project '{name}' in {self.project_file}: {ex}"
+            ) from ex
 
     def get_project_name(self, short_name: str) -> str:
         for prefix in REPO_PREFIX:

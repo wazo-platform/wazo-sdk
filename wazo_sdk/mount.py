@@ -21,7 +21,7 @@ from wazo_sdk.config import Config
 from wazo_sdk.state import State
 
 if TYPE_CHECKING:
-    from wazo_sdk.config import ProjectConfigData
+    from wazo_sdk.config import Project
     from wazo_sdk.state import MountData
 
 
@@ -176,28 +176,20 @@ class Mounter:
         else:
             self._stop_sync(real_repo_name)
 
-    def _apply_mount(self, repo_name: str, config: ProjectConfigData) -> None:
-        if not config:
-            return
-
+    def _apply_mount(self, repo_name: str, project: Project) -> None:
         wazo = sh.ssh.bake(self._hostname)
-        if config.get('python3'):
+        if project.python3:
             self._mount_python3(wazo, repo_name)
-        binds = config.get('bind')
-        if binds:
-            self._bind_files(wazo, repo_name, binds)
+        if project.bind:
+            self._bind_files(wazo, repo_name, project.bind)
 
-    def _unapply_mount(self, repo_name: str, config: ProjectConfigData) -> None:
-        if not config:
-            return
-
+    def _unapply_mount(self, repo_name: str, project: Project) -> None:
         wazo = sh.ssh.bake(self._hostname)
-        if config.get('python3'):
+        if project.python3:
             self._umount_python3(wazo, repo_name)
-        binds = config.get('bind')
-        if binds:
-            self._remove_bind_files(wazo, repo_name, binds)
-        clean = config.get('clean')
+        if project.bind:
+            self._remove_bind_files(wazo, repo_name, project.bind)
+        clean = project.clean
         if clean:
             self._clean_files(wazo, clean)
 
