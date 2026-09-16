@@ -109,6 +109,17 @@ Note that new entry points will need the project to be unmounted and mounted aga
 wdk mount [-r] [<project1>, <project2>, ...<projectn>]
 ```
 
+Projects are looked up by name in the `local_source` directory. To mount a checkout kept
+elsewhere, such as a git worktree, give its path with `<project>=<path>`:
+
+```sh
+wdk mount wazo-confd=~/worktrees/ITEM-123
+```
+
+The project name still selects the project configuration and the remote destination, so the
+checkout directory does not have to be named after the project. Mounting a project that is
+already mounted from another path moves the sync to the new checkout.
+
 ## Unmounting a project
 
 ```sh

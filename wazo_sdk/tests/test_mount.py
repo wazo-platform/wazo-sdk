@@ -180,7 +180,7 @@ class TestStartSync:
         proc.returncode = 0
 
         with patch('subprocess.Popen', return_value=proc) as popen:
-            mounter._start_sync('my-repo', 'my-repo')
+            mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         command = popen.call_args[0][0]
         assert '--exclude=.git' in command
@@ -200,7 +200,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='rsync'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         state.add_mount.assert_not_called()
 
@@ -213,7 +213,7 @@ class TestStartSync:
         proc.returncode = 0
 
         with patch('subprocess.Popen', return_value=proc):
-            mounter._start_sync('my-repo', 'my-repo')
+            mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         state.add_mount.assert_called_once()
 
@@ -232,7 +232,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         state.add_mount.assert_not_called()
 
@@ -253,7 +253,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         proc.kill.assert_called_once()
         state.add_mount.assert_not_called()
@@ -275,7 +275,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         assert proc.communicate.call_count == 2
 
@@ -296,7 +296,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             try:
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
             except SyncError as exc:
                 assert exc.__suppress_context__ is True
             else:
@@ -317,7 +317,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         assert list(tmp_path.iterdir()) == []
 
@@ -338,7 +338,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         assert list(tmp_path.iterdir()) == []
 
@@ -546,3 +546,29 @@ class TestBindFilesErrorPaths:
 
         cmds = [c[0][0] for c in ssh.call_args_list]
         assert not any('mount --bind' in c for c in cmds)
+
+
+class TestResolveLocalDir:
+    def test_override_is_absolute_and_expanded(
+        self, mounter: Mounter, tmp_path: pathlib.Path
+    ) -> None:
+        checkout = tmp_path / 'worktree-ITEM-123'
+        checkout.mkdir()
+
+        resolved = mounter._resolve_local_dir('my-repo', str(checkout))
+
+        assert resolved == str(checkout)
+
+    def test_override_rejects_missing_directory(
+        self, mounter: Mounter, tmp_path: pathlib.Path
+    ) -> None:
+        with pytest.raises(Exception, match='No such directory'):
+            mounter._resolve_local_dir('my-repo', str(tmp_path / 'absent'))
+
+    def test_without_override_uses_dev_dir(self, mounter: Mounter) -> None:
+        with patch.object(
+            Mounter, '_find_local_repo_name', return_value='wazo-my-repo'
+        ):
+            resolved = mounter._resolve_local_dir('my-repo', None)
+
+        assert resolved == '/local/src/wazo-my-repo'

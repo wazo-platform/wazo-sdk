@@ -109,12 +109,16 @@ class Mounter:
         self._remote_dir: str = config.remote_source  # type: ignore
         self._state = state
 
-    def list_(self) -> Generator[tuple[str, bool], None, None]:
+    def list_(self) -> Generator[tuple[str, bool, str | None], None, None]:
         mounts = self._state.get_mounts(self._hostname)
         for mount in mounts.values():
             if not mount:
                 continue
-            yield mount['project'], self._is_sync_running(mount)
+            yield (
+                mount['project'],
+                self._is_sync_running(mount),
+                mount.get('local_path'),
+            )
 
     def _is_sync_running(self, mount: MountData) -> bool:
         if self._config.rsync_only:
@@ -139,26 +143,51 @@ class Mounter:
             return False
         return self._is_sync_running(mount)
 
-    def mount(self, repo_name: str) -> None:
+    def mount(self, repo_name: str, local_path: str | None = None) -> None:
         if not self._hostname:
             raise Exception('The remote hostname is required to mount directories')
+
+        local_dir = self._resolve_local_dir(repo_name, local_path)
+        real_repo_name = self._config.get_project_name(repo_name)
+
+        # Skip sync if lsync is already running (rsync-only always re-syncs)
+        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
+            mounted_dir = self._mounted_local_dir(real_repo_name)
+            if mounted_dir == local_dir:
+                self.logger.debug('%s is already mounted', real_repo_name)
+            else:
+                self.logger.info(
+                    '%s is mounted from %s, switching to %s',
+                    real_repo_name,
+                    mounted_dir,
+                    local_dir,
+                )
+                self._stop_sync(real_repo_name)
+                self._start_sync(local_dir, real_repo_name)
+        else:
+            self._start_sync(local_dir, real_repo_name)
+
+        repo_config = self._config.get_project(real_repo_name)
+        self._apply_mount(real_repo_name, repo_config)
+
+    def _resolve_local_dir(self, repo_name: str, local_path: str | None) -> str:
+        if local_path:
+            local_dir = os.path.abspath(os.path.expanduser(local_path))
+            if not os.path.isdir(local_dir):
+                raise Exception(f'No such directory {local_dir}')
+            return local_dir
 
         if not self._local_dir:
             raise Exception(
                 'The local source directory is required to mount directories'
             )
+        return os.path.join(self._local_dir, self._find_local_repo_name(repo_name))
 
-        local_repo_name = self._find_local_repo_name(repo_name)
-        real_repo_name = self._config.get_project_name(repo_name)
-
-        # Skip sync if lsync is already running (rsync-only always re-syncs)
-        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
-            self.logger.debug('%s is already mounted', real_repo_name)
-        else:
-            self._start_sync(local_repo_name, real_repo_name)
-
-        repo_config = self._config.get_project(real_repo_name)
-        self._apply_mount(real_repo_name, repo_config)
+    def _mounted_local_dir(self, repo_name: str) -> str | None:
+        mount = self._state.get_mount(self._hostname, repo_name)
+        if not mount:
+            return None
+        return mount.get('local_path')
 
     def umount(self, repo_name: str) -> None:
         if not self._local_dir:
@@ -262,8 +291,7 @@ class Mounter:
     def _wait_for_file(self, ssh: sh.Command, filename: str) -> None:
         ssh(f'while [ ! -e {shlex.quote(filename)} ]; do sleep 0.2; done')
 
-    def _start_sync(self, local_repo_name: str, real_repo_name: str) -> None:
-        local_path = os.path.join(self._local_dir, local_repo_name)
+    def _start_sync(self, local_path: str, real_repo_name: str) -> None:
         remote_path = os.path.join(self._remote_dir, real_repo_name)
         config_filename: str | None = None
         pid_filename: str | None = None
@@ -314,7 +342,7 @@ class Mounter:
                 self._cleanup_sync_files(config_filename, pid_filename)
 
         self._state.add_mount(
-            self._hostname, real_repo_name, config_filename, pid_filename
+            self._hostname, real_repo_name, config_filename, pid_filename, local_path
         )
 
     def _cleanup_sync_files(

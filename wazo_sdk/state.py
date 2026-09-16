@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from __future__ import annotations
@@ -7,12 +7,14 @@ import json
 from typing import TYPE_CHECKING, Any, TextIO
 
 if TYPE_CHECKING:
-    from typing import TypedDict
+    from typing import NotRequired, TypedDict
 
     class MountData(TypedDict):
         project: str
         lsync_config: str | None
         lsync_pidfile: str | None
+        # absent from state files written before local path overrides existed
+        local_path: NotRequired[str]
 
 
 class State:
@@ -20,12 +22,18 @@ class State:
         self._data = data or {'hosts': {}}
 
     def add_mount(
-        self, host: str, repo: str, config: str | None, pid: str | None
+        self,
+        host: str,
+        repo: str,
+        config: str | None,
+        pid: str | None,
+        local_path: str,
     ) -> None:
         mount: MountData = {
             'project': repo,
             'lsync_config': config,
             'lsync_pidfile': pid,
+            'local_path': local_path,
         }
         self.get_mounts(host)[repo] = mount
 
