@@ -9,6 +9,7 @@ import shlex
 import signal
 import subprocess
 import tempfile
+import time
 from collections.abc import Generator
 from logging import Logger
 from typing import TYPE_CHECKING, Any
@@ -54,6 +55,8 @@ def is_lsyncd_pid(pid: int) -> bool:
 
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
+LSYNCD_STOP_TIMEOUT = 5.0
+LSYNCD_STOP_POLL_INTERVAL = 0.1
 LSYNC_CONFIG_TEMPLATE = Template(
     '''\
 sync {
@@ -156,12 +159,21 @@ class Mounter:
             if mounted_dir == local_dir:
                 self.logger.debug('%s is already mounted', real_repo_name)
             else:
-                self.logger.info(
-                    '%s is mounted from %s, switching to %s',
-                    real_repo_name,
-                    mounted_dir,
-                    local_dir,
-                )
+                if mounted_dir:
+                    self.logger.info(
+                        '%s is mounted from %s, switching to %s',
+                        real_repo_name,
+                        mounted_dir,
+                        local_dir,
+                    )
+                else:
+                    # state predates local path recording: the synced checkout
+                    # is unknown, so re-sync rather than keep the wrong one
+                    self.logger.info(
+                        '%s is mounted from an unrecorded checkout, re-syncing from %s',
+                        real_repo_name,
+                        local_dir,
+                    )
                 self._stop_sync(real_repo_name)
                 self._start_sync(local_dir, real_repo_name)
         else:
@@ -366,10 +378,7 @@ class Mounter:
             pid = read_pidfile(pid_filename) if pid_filename else None
 
             if pid:
-                try:
-                    os.kill(pid, signal.SIGTERM)
-                except OSError as ex:
-                    self.logger.error('failed to kill %s: %s', pid, ex)
+                self._terminate_lsyncd(pid)
 
             for path in (pid_filename, mount['lsync_config']):
                 if path:
@@ -379,6 +388,45 @@ class Mounter:
                         pass
 
         self._state.remove_mount(self._hostname, repo_name)
+
+    def _terminate_lsyncd(self, pid: int) -> None:
+        # a stale pidfile may point at a recycled pid belonging to something else
+        if not is_lsyncd_pid(pid):
+            self.logger.debug('pid %s is not lsyncd, leaving it alone', pid)
+            return
+
+        if not self._signal_lsyncd(pid, signal.SIGTERM):
+            return
+
+        if self._wait_for_lsyncd_exit(pid, LSYNCD_STOP_TIMEOUT):
+            return
+
+        self.logger.warning(
+            'lsyncd %s did not stop after %ss, killing it', pid, LSYNCD_STOP_TIMEOUT
+        )
+        if not self._signal_lsyncd(pid, signal.SIGKILL):
+            return
+
+        if not self._wait_for_lsyncd_exit(pid, LSYNCD_STOP_TIMEOUT):
+            self.logger.error('lsyncd %s is still running after SIGKILL', pid)
+
+    def _signal_lsyncd(self, pid: int, sig: int) -> bool:
+        try:
+            os.kill(pid, sig)
+        except ProcessLookupError:
+            return False
+        except OSError as ex:
+            self.logger.error('failed to signal %s: %s', pid, ex)
+            return False
+        return True
+
+    def _wait_for_lsyncd_exit(self, pid: int, timeout: float) -> bool:
+        deadline = time.monotonic() + timeout
+        while is_lsyncd_pid(pid):
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(LSYNCD_STOP_POLL_INTERVAL)
+        return True
 
     def _find_local_repo_name(self, repo_name: str) -> str:
         for prefix in REPO_PREFIX:

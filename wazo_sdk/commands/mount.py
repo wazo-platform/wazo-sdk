@@ -56,7 +56,10 @@ class Mount(Command):
             mounted_repos = self.mounter.list_()
             for repo, running, local_path in mounted_repos:
                 state = 'UP' if running else 'DOWN'
-                self.app.LOG.info('%s %s %s', repo, state, local_path or '')
+                if local_path:
+                    self.app.LOG.info('%s %s %s', repo, state, local_path)
+                else:
+                    self.app.LOG.info('%s %s', repo, state)
 
 
 class Umount(Command):

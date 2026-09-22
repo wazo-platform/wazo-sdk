@@ -4,8 +4,9 @@
 from __future__ import annotations
 
 import pathlib
+import signal
 import subprocess
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 
@@ -572,3 +573,87 @@ class TestResolveLocalDir:
             resolved = mounter._resolve_local_dir('my-repo', None)
 
         assert resolved == '/local/src/wazo-my-repo'
+
+
+class TestStopSyncWaitsForExit:
+    def _mount(self, tmp_path: pathlib.Path, pid: int = 99999) -> dict[str, str]:
+        pid_file = tmp_path / 'lsyncd.pid'
+        pid_file.write_text(str(pid))
+        return {
+            'project': 'my-repo',
+            'lsync_config': str(tmp_path / 'config'),
+            'lsync_pidfile': str(pid_file),
+            'local_path': '/local/src/my-repo',
+        }
+
+    def test_waits_until_lsyncd_exits(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = self._mount(tmp_path)
+
+        with patch(
+            'wazo_sdk.mount.is_lsyncd_pid', side_effect=[True, True, True, False]
+        ) as is_lsyncd:
+            with patch('os.kill') as kill:
+                mounter._stop_sync('my-repo')
+
+        assert kill.call_args_list == [call(99999, signal.SIGTERM)]
+        assert is_lsyncd.call_count == 4
+
+    def test_escalates_to_sigkill_when_lsyncd_does_not_exit(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = self._mount(tmp_path)
+
+        with patch('wazo_sdk.mount.is_lsyncd_pid', return_value=True):
+            with patch('wazo_sdk.mount.LSYNCD_STOP_TIMEOUT', 0.05):
+                with patch('wazo_sdk.mount.LSYNCD_STOP_POLL_INTERVAL', 0.01):
+                    with patch('os.kill') as kill:
+                        mounter._stop_sync('my-repo')
+
+        assert call(99999, signal.SIGTERM) in kill.call_args_list
+        assert call(99999, signal.SIGKILL) in kill.call_args_list
+
+    def test_does_not_kill_a_pid_that_is_not_lsyncd(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = self._mount(tmp_path)
+
+        with patch('wazo_sdk.mount.is_lsyncd_pid', return_value=False):
+            with patch('os.kill') as kill:
+                mounter._stop_sync('my-repo')
+
+        kill.assert_not_called()
+
+    def test_still_cleans_up_when_pid_is_not_lsyncd(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        mount = self._mount(tmp_path)
+        state.get_mount.return_value = mount
+
+        with patch('wazo_sdk.mount.is_lsyncd_pid', return_value=False):
+            with patch('os.kill'):
+                mounter._stop_sync('my-repo')
+
+        assert not pathlib.Path(mount['lsync_pidfile']).exists()
+        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
