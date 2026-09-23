@@ -32,7 +32,7 @@ class Mount(Command):
             nargs='*',
             default=[],
             help=(
-                'a list repos to mount; '
+                'a list of repos to mount; '
                 'use <repo>=<path> to mount a checkout outside the dev directory'
             ),
         )
