@@ -216,6 +216,7 @@ class Mounter:
             self.logger.debug('%s is not mounted', real_repo_name)
         else:
             self._stop_sync(real_repo_name)
+            self._state.remove_mount(self._hostname, real_repo_name)
 
     def _apply_mount(self, repo_name: str, project: Project) -> None:
         wazo = sh.ssh.bake(self._hostname)
@@ -386,8 +387,6 @@ class Mounter:
                         os.unlink(path)
                     except OSError:
                         pass
-
-        self._state.remove_mount(self._hostname, repo_name)
 
     def _terminate_lsyncd(self, pid: int) -> None:
         # a stale pidfile may point at a recycled pid belonging to something else
