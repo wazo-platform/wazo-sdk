@@ -4,8 +4,9 @@
 from __future__ import annotations
 
 import pathlib
+import signal
 import subprocess
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 
@@ -180,7 +181,7 @@ class TestStartSync:
         proc.returncode = 0
 
         with patch('subprocess.Popen', return_value=proc) as popen:
-            mounter._start_sync('my-repo', 'my-repo')
+            mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         command = popen.call_args[0][0]
         assert '--exclude=.git' in command
@@ -200,7 +201,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='rsync'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         state.add_mount.assert_not_called()
 
@@ -213,7 +214,7 @@ class TestStartSync:
         proc.returncode = 0
 
         with patch('subprocess.Popen', return_value=proc):
-            mounter._start_sync('my-repo', 'my-repo')
+            mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         state.add_mount.assert_called_once()
 
@@ -232,7 +233,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         state.add_mount.assert_not_called()
 
@@ -253,7 +254,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         proc.kill.assert_called_once()
         state.add_mount.assert_not_called()
@@ -275,7 +276,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         assert proc.communicate.call_count == 2
 
@@ -296,7 +297,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             try:
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
             except SyncError as exc:
                 assert exc.__suppress_context__ is True
             else:
@@ -317,7 +318,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError, match='lsyncd'):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         assert list(tmp_path.iterdir()) == []
 
@@ -338,7 +339,7 @@ class TestStartSync:
 
         with patch('subprocess.Popen', return_value=proc):
             with pytest.raises(SyncError):
-                mounter._start_sync('my-repo', 'my-repo')
+                mounter._start_sync('/local/src/my-repo', 'my-repo')
 
         assert list(tmp_path.iterdir()) == []
 
@@ -417,9 +418,10 @@ class TestStopSync:
 
         assert not pid_file.exists()
 
-    def test_rsync_only_removes_state(
+    def test_leaves_state_alone(
         self, mounter: Mounter, config: MagicMock, state: MagicMock
     ) -> None:
+        # forgetting a mount belongs to umount, not to stopping its sync
         config.rsync_only = True
         state.get_mount.return_value = {
             'project': 'my-repo',
@@ -429,9 +431,9 @@ class TestStopSync:
 
         mounter._stop_sync('my-repo')
 
-        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+        state.remove_mount.assert_not_called()
 
-    def test_rsync_only_noop_when_not_mounted(
+    def test_noop_when_not_mounted(
         self, mounter: Mounter, config: MagicMock, state: MagicMock
     ) -> None:
         config.rsync_only = True
@@ -441,7 +443,7 @@ class TestStopSync:
 
         state.remove_mount.assert_not_called()
 
-    def test_removes_state_when_pidfile_is_none(
+    def test_tolerates_a_missing_pidfile(
         self, mounter: Mounter, config: MagicMock, state: MagicMock
     ) -> None:
         config.rsync_only = False
@@ -451,11 +453,12 @@ class TestStopSync:
             'lsync_pidfile': None,
         }
 
-        mounter._stop_sync('my-repo')
+        with patch('os.kill') as kill:
+            mounter._stop_sync('my-repo')
 
-        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+        kill.assert_not_called()
 
-    def test_removes_state_when_pidfile_content_is_invalid(
+    def test_deletes_pidfile_when_its_content_is_invalid(
         self,
         mounter: Mounter,
         config: MagicMock,
@@ -471,9 +474,11 @@ class TestStopSync:
             'lsync_pidfile': str(pid_file),
         }
 
-        mounter._stop_sync('my-repo')
+        with patch('os.kill') as kill:
+            mounter._stop_sync('my-repo')
 
-        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+        kill.assert_not_called()
+        assert not pid_file.exists()
 
     def test_deletes_lsync_config_on_stop(
         self,
@@ -546,3 +551,168 @@ class TestBindFilesErrorPaths:
 
         cmds = [c[0][0] for c in ssh.call_args_list]
         assert not any('mount --bind' in c for c in cmds)
+
+
+class TestResolveLocalDir:
+    def test_override_is_absolute_and_expanded(
+        self, mounter: Mounter, tmp_path: pathlib.Path
+    ) -> None:
+        checkout = tmp_path / 'worktree-ITEM-123'
+        checkout.mkdir()
+
+        resolved = mounter._resolve_local_dir('my-repo', str(checkout))
+
+        assert resolved == str(checkout)
+
+    def test_override_rejects_missing_directory(
+        self, mounter: Mounter, tmp_path: pathlib.Path
+    ) -> None:
+        with pytest.raises(Exception, match='No such directory'):
+            mounter._resolve_local_dir('my-repo', str(tmp_path / 'absent'))
+
+    def test_without_override_uses_dev_dir(self, mounter: Mounter) -> None:
+        with patch.object(
+            Mounter, '_find_local_repo_name', return_value='wazo-my-repo'
+        ):
+            resolved = mounter._resolve_local_dir('my-repo', None)
+
+        assert resolved == '/local/src/wazo-my-repo'
+
+
+class TestStopSyncWaitsForExit:
+    def _mount(self, tmp_path: pathlib.Path, pid: int = 99999) -> dict[str, str]:
+        pid_file = tmp_path / 'lsyncd.pid'
+        pid_file.write_text(str(pid))
+        return {
+            'project': 'my-repo',
+            'lsync_config': str(tmp_path / 'config'),
+            'lsync_pidfile': str(pid_file),
+            'local_path': '/local/src/my-repo',
+        }
+
+    def test_waits_until_lsyncd_exits(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = self._mount(tmp_path)
+
+        with patch(
+            'wazo_sdk.mount.is_lsyncd_pid', side_effect=[True, True, True, False]
+        ) as is_lsyncd:
+            with patch('os.kill') as kill:
+                mounter._stop_sync('my-repo')
+
+        assert kill.call_args_list == [call(99999, signal.SIGTERM)]
+        assert is_lsyncd.call_count == 4
+
+    def test_escalates_to_sigkill_when_lsyncd_does_not_exit(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = self._mount(tmp_path)
+
+        with patch('wazo_sdk.mount.is_lsyncd_pid', return_value=True):
+            with patch('wazo_sdk.mount.LSYNCD_STOP_TIMEOUT', 0.05):
+                with patch('wazo_sdk.mount.LSYNCD_STOP_POLL_INTERVAL', 0.01):
+                    with patch('os.kill') as kill:
+                        mounter._stop_sync('my-repo')
+
+        assert call(99999, signal.SIGTERM) in kill.call_args_list
+        assert call(99999, signal.SIGKILL) in kill.call_args_list
+
+    def test_does_not_kill_a_pid_that_is_not_lsyncd(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        state.get_mount.return_value = self._mount(tmp_path)
+
+        with patch('wazo_sdk.mount.is_lsyncd_pid', return_value=False):
+            with patch('os.kill') as kill:
+                mounter._stop_sync('my-repo')
+
+        kill.assert_not_called()
+
+    def test_still_cleans_up_when_pid_is_not_lsyncd(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        state: MagicMock,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        config.rsync_only = False
+        mount = self._mount(tmp_path)
+        state.get_mount.return_value = mount
+
+        with patch('wazo_sdk.mount.is_lsyncd_pid', return_value=False):
+            with patch('os.kill'):
+                mounter._stop_sync('my-repo')
+
+        assert not pathlib.Path(mount['lsync_pidfile']).exists()
+
+
+class TestUmountState:
+    def test_removes_state_after_stopping_the_sync(
+        self, mounter: Mounter, config: MagicMock, state: MagicMock
+    ) -> None:
+        config.get_project_name.return_value = 'my-repo'
+        state.is_mounted.return_value = True
+
+        with patch.object(Mounter, '_unapply_mount'):
+            with patch.object(Mounter, '_stop_sync') as stop_sync:
+                mounter.umount('my-repo')
+
+        stop_sync.assert_called_once_with('my-repo')
+        state.remove_mount.assert_called_once_with('test-host', 'my-repo')
+
+    def test_does_not_touch_state_when_nothing_is_mounted(
+        self, mounter: Mounter, config: MagicMock, state: MagicMock
+    ) -> None:
+        config.get_project_name.return_value = 'my-repo'
+        state.is_mounted.return_value = False
+
+        with patch.object(Mounter, '_unapply_mount'):
+            with patch.object(Mounter, '_stop_sync') as stop_sync:
+                mounter.umount('my-repo')
+
+        stop_sync.assert_not_called()
+        state.remove_mount.assert_not_called()
+
+
+class TestSwitchCheckoutFailure:
+    def test_failed_start_keeps_the_mount_in_state(
+        self, mounter: Mounter, config: MagicMock, state: MagicMock
+    ) -> None:
+        # stopping the old sync must not make wdk forget the mount: the remote
+        # bind mounts and develop install are still in place
+        config.rsync_only = False
+        config.get_project_name.return_value = 'my-repo'
+        state.get_mount.return_value = {
+            'project': 'my-repo',
+            'lsync_config': None,
+            'lsync_pidfile': None,
+            'local_path': '/local/src/old-checkout',
+        }
+
+        with patch.object(Mounter, '_is_sync_running', return_value=True):
+            with patch.object(
+                Mounter, '_resolve_local_dir', return_value='/local/src/new'
+            ):
+                with patch.object(
+                    Mounter, '_start_sync', side_effect=SyncError('boom')
+                ):
+                    with pytest.raises(SyncError):
+                        mounter.mount('my-repo', '/local/src/new')
+
+        state.remove_mount.assert_not_called()

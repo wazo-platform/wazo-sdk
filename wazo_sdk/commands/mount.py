@@ -28,14 +28,21 @@ class Mount(Command):
             '--restart', '-r', action='store_true', help='restart mounted repositories'
         )
         parser.add_argument(
-            'repos', nargs='*', default=[], help='a list repos to mount'
+            'repos',
+            nargs='*',
+            default=[],
+            help=(
+                'a list of repos to mount; '
+                'use <repo>=<path> to mount a checkout outside the dev directory'
+            ),
         )
         return parser
 
     def take_action(self, parsed_args: Namespace) -> None:
-        for repo in parsed_args.repos:
+        for spec in parsed_args.repos:
+            repo, _, local_path = spec.partition('=')
             try:
-                self.mounter.mount(repo)
+                self.mounter.mount(repo, local_path or None)
             except Exception:
                 self.app.LOG.exception('Error mount repo %s', repo)
             else:
@@ -47,9 +54,12 @@ class Mount(Command):
 
         if parsed_args.list:
             mounted_repos = self.mounter.list_()
-            for repo, running in mounted_repos:
+            for repo, running, local_path in mounted_repos:
                 state = 'UP' if running else 'DOWN'
-                self.app.LOG.info('%s %s', repo, state)
+                if local_path:
+                    self.app.LOG.info('%s %s %s', repo, state, local_path)
+                else:
+                    self.app.LOG.info('%s %s', repo, state)
 
 
 class Umount(Command):
@@ -73,8 +83,10 @@ class Umount(Command):
         return parser
 
     def take_action(self, parsed_args: Namespace) -> None:
-        repos = parsed_args.repos or [repo for repo, _ in self.mounter.list_()]
-        for repo in repos:
+        specs = parsed_args.repos or [repo for repo, _, _ in self.mounter.list_()]
+        for spec in specs:
+            # tolerate the <repo>=<path> form accepted by mount
+            repo = spec.partition('=')[0]
             try:
                 self.mounter.umount(repo)
             except Exception:

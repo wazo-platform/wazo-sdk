@@ -9,6 +9,7 @@ import shlex
 import signal
 import subprocess
 import tempfile
+import time
 from collections.abc import Generator
 from logging import Logger
 from typing import TYPE_CHECKING, Any
@@ -54,6 +55,8 @@ def is_lsyncd_pid(pid: int) -> bool:
 
 
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
+LSYNCD_STOP_TIMEOUT = 5.0
+LSYNCD_STOP_POLL_INTERVAL = 0.1
 LSYNC_CONFIG_TEMPLATE = Template(
     '''\
 sync {
@@ -109,12 +112,16 @@ class Mounter:
         self._remote_dir: str = config.remote_source  # type: ignore
         self._state = state
 
-    def list_(self) -> Generator[tuple[str, bool], None, None]:
+    def list_(self) -> Generator[tuple[str, bool, str | None], None, None]:
         mounts = self._state.get_mounts(self._hostname)
         for mount in mounts.values():
             if not mount:
                 continue
-            yield mount['project'], self._is_sync_running(mount)
+            yield (
+                mount['project'],
+                self._is_sync_running(mount),
+                mount.get('local_path'),
+            )
 
     def _is_sync_running(self, mount: MountData) -> bool:
         if self._config.rsync_only:
@@ -139,26 +146,60 @@ class Mounter:
             return False
         return self._is_sync_running(mount)
 
-    def mount(self, repo_name: str) -> None:
+    def mount(self, repo_name: str, local_path: str | None = None) -> None:
         if not self._hostname:
             raise Exception('The remote hostname is required to mount directories')
+
+        local_dir = self._resolve_local_dir(repo_name, local_path)
+        real_repo_name = self._config.get_project_name(repo_name)
+
+        # Skip sync if lsync is already running (rsync-only always re-syncs)
+        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
+            mounted_dir = self._mounted_local_dir(real_repo_name)
+            if mounted_dir == local_dir:
+                self.logger.debug('%s is already mounted', real_repo_name)
+            else:
+                if mounted_dir:
+                    self.logger.info(
+                        '%s is mounted from %s, switching to %s',
+                        real_repo_name,
+                        mounted_dir,
+                        local_dir,
+                    )
+                else:
+                    # state predates local path recording: the synced checkout
+                    # is unknown, so re-sync rather than keep the wrong one
+                    self.logger.info(
+                        '%s is mounted from an unrecorded checkout, re-syncing from %s',
+                        real_repo_name,
+                        local_dir,
+                    )
+                self._stop_sync(real_repo_name)
+                self._start_sync(local_dir, real_repo_name)
+        else:
+            self._start_sync(local_dir, real_repo_name)
+
+        repo_config = self._config.get_project(real_repo_name)
+        self._apply_mount(real_repo_name, repo_config)
+
+    def _resolve_local_dir(self, repo_name: str, local_path: str | None) -> str:
+        if local_path:
+            local_dir = os.path.abspath(os.path.expanduser(local_path))
+            if not os.path.isdir(local_dir):
+                raise Exception(f'No such directory {local_dir}')
+            return local_dir
 
         if not self._local_dir:
             raise Exception(
                 'The local source directory is required to mount directories'
             )
+        return os.path.join(self._local_dir, self._find_local_repo_name(repo_name))
 
-        local_repo_name = self._find_local_repo_name(repo_name)
-        real_repo_name = self._config.get_project_name(repo_name)
-
-        # Skip sync if lsync is already running (rsync-only always re-syncs)
-        if not self._config.rsync_only and self._is_mounted_and_running(real_repo_name):
-            self.logger.debug('%s is already mounted', real_repo_name)
-        else:
-            self._start_sync(local_repo_name, real_repo_name)
-
-        repo_config = self._config.get_project(real_repo_name)
-        self._apply_mount(real_repo_name, repo_config)
+    def _mounted_local_dir(self, repo_name: str) -> str | None:
+        mount = self._state.get_mount(self._hostname, repo_name)
+        if not mount:
+            return None
+        return mount.get('local_path')
 
     def umount(self, repo_name: str) -> None:
         if not self._local_dir:
@@ -175,6 +216,7 @@ class Mounter:
             self.logger.debug('%s is not mounted', real_repo_name)
         else:
             self._stop_sync(real_repo_name)
+            self._state.remove_mount(self._hostname, real_repo_name)
 
     def _apply_mount(self, repo_name: str, project: Project) -> None:
         wazo = sh.ssh.bake(self._hostname)
@@ -262,8 +304,7 @@ class Mounter:
     def _wait_for_file(self, ssh: sh.Command, filename: str) -> None:
         ssh(f'while [ ! -e {shlex.quote(filename)} ]; do sleep 0.2; done')
 
-    def _start_sync(self, local_repo_name: str, real_repo_name: str) -> None:
-        local_path = os.path.join(self._local_dir, local_repo_name)
+    def _start_sync(self, local_path: str, real_repo_name: str) -> None:
         remote_path = os.path.join(self._remote_dir, real_repo_name)
         config_filename: str | None = None
         pid_filename: str | None = None
@@ -314,7 +355,7 @@ class Mounter:
                 self._cleanup_sync_files(config_filename, pid_filename)
 
         self._state.add_mount(
-            self._hostname, real_repo_name, config_filename, pid_filename
+            self._hostname, real_repo_name, config_filename, pid_filename, local_path
         )
 
     def _cleanup_sync_files(
@@ -338,10 +379,7 @@ class Mounter:
             pid = read_pidfile(pid_filename) if pid_filename else None
 
             if pid:
-                try:
-                    os.kill(pid, signal.SIGTERM)
-                except OSError as ex:
-                    self.logger.error('failed to kill %s: %s', pid, ex)
+                self._terminate_lsyncd(pid)
 
             for path in (pid_filename, mount['lsync_config']):
                 if path:
@@ -350,7 +388,44 @@ class Mounter:
                     except OSError:
                         pass
 
-        self._state.remove_mount(self._hostname, repo_name)
+    def _terminate_lsyncd(self, pid: int) -> None:
+        # a stale pidfile may point at a recycled pid belonging to something else
+        if not is_lsyncd_pid(pid):
+            self.logger.debug('pid %s is not lsyncd, leaving it alone', pid)
+            return
+
+        if not self._signal_lsyncd(pid, signal.SIGTERM):
+            return
+
+        if self._wait_for_lsyncd_exit(pid, LSYNCD_STOP_TIMEOUT):
+            return
+
+        self.logger.warning(
+            'lsyncd %s did not stop after %ss, killing it', pid, LSYNCD_STOP_TIMEOUT
+        )
+        if not self._signal_lsyncd(pid, signal.SIGKILL):
+            return
+
+        if not self._wait_for_lsyncd_exit(pid, LSYNCD_STOP_TIMEOUT):
+            self.logger.error('lsyncd %s is still running after SIGKILL', pid)
+
+    def _signal_lsyncd(self, pid: int, sig: int) -> bool:
+        try:
+            os.kill(pid, sig)
+        except ProcessLookupError:
+            return False
+        except OSError as ex:
+            self.logger.error('failed to signal %s: %s', pid, ex)
+            return False
+        return True
+
+    def _wait_for_lsyncd_exit(self, pid: int, timeout: float) -> bool:
+        deadline = time.monotonic() + timeout
+        while is_lsyncd_pid(pid):
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(LSYNCD_STOP_POLL_INTERVAL)
+        return True
 
     def _find_local_repo_name(self, repo_name: str) -> str:
         for prefix in REPO_PREFIX:
