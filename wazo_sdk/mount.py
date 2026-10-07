@@ -280,12 +280,9 @@ class Mounter:
 
     def _mount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         repo_dir = os.path.join(self._remote_dir, repo_name)
-        ssh(
-            'while [ ! -e {setup} ] && [ ! -e {pyproject} ]; do sleep 0.2; done'.format(
-                setup=shlex.quote(os.path.join(repo_dir, 'setup.py')),
-                pyproject=shlex.quote(os.path.join(repo_dir, 'pyproject.toml')),
-            )
-        )
+        setup = shlex.quote(os.path.join(repo_dir, 'setup.py'))
+        pyproject = shlex.quote(os.path.join(repo_dir, 'pyproject.toml'))
+        ssh(f'while [ ! -e {setup} ] && [ ! -e {pyproject} ]; do sleep 0.2; done')
 
         # --no-deps retains consistency of debian packaging
         cmd = (
