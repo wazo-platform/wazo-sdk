@@ -1,0 +1,56 @@
+#!/usr/bin/env bats
+
+setup_file() {
+    load helpers.bash
+    common_setup_file
+}
+
+setup() {
+    load helpers.bash
+    common_setup
+    run_wdk mount wazo-test-service
+}
+
+teardown() {
+    load helpers.bash
+    common_teardown
+}
+
+@test "umount removes bind mounts" {
+    run docker_exec mount
+    [[ "$output" == *"/etc/wazo-test-service/config.yml"* ]]
+
+    run_wdk umount wazo-test-service
+
+    run docker_exec mount
+    [[ "$output" != *"/etc/wazo-test-service/config.yml"* ]]
+}
+
+@test "umount runs setup.py develop --uninstall" {
+    run docker_exec pip3 show wazo-test-service
+    [ "$status" -eq 0 ]
+
+    run_wdk umount wazo-test-service
+
+    run docker_exec pip3 show wazo-test-service
+    [ "$status" -ne 0 ]
+}
+
+@test "umount removes state entry" {
+    run_wdk umount wazo-test-service
+
+    local state_file="$WDK_CACHE_DIR/state"
+    if [ -f "$state_file" ]; then
+        run grep -c "wazo-test-service" "$state_file"
+        [ "$output" = "0" ] || [ "$status" -ne 0 ]
+    fi
+}
+
+@test "umount cleans specified files" {
+    docker_exec touch /usr/local/bin/wazo-test-service
+
+    run_wdk umount wazo-test-service
+
+    run docker_exec test -e /usr/local/bin/wazo-test-service
+    [ "$status" -ne 0 ]
+}
