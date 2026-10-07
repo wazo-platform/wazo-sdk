@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import shlex
@@ -278,19 +279,32 @@ class Mounter:
             self.logger.debug(ssh(cmd))
 
     def _mount_python3(self, ssh: sh.Command, repo_name: str) -> None:
-        setup_path = os.path.join(self._remote_dir, repo_name, 'setup.py')
-        self._wait_for_file(ssh, setup_path)
-
         repo_dir = os.path.join(self._remote_dir, repo_name)
-        # -N flag ensures the dependencies are not installed/updated,
-        # in order to retain consistency of debian packaging
-        cmd = f'cd {shlex.quote(repo_dir)} && python3 setup.py develop -N'
+        ssh(
+            'while [ ! -e {setup} ] && [ ! -e {pyproject} ]; do sleep 0.2; done'.format(
+                setup=shlex.quote(os.path.join(repo_dir, 'setup.py')),
+                pyproject=shlex.quote(os.path.join(repo_dir, 'pyproject.toml')),
+            )
+        )
+
+        # --no-deps retains consistency of debian packaging
+        cmd = (
+            'pip install --break-system-packages --no-deps '
+            f'-e {shlex.quote(repo_dir)}'
+        )
         self.logger.debug(ssh(cmd))
 
     def _umount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         repo_dir = os.path.join(self._remote_dir, repo_name)
-        cmd = f'cd {shlex.quote(repo_dir)} && python3 setup.py develop --uninstall'
-        self.logger.debug(ssh(cmd))
+        installed = json.loads(ssh('pip list -e --format json'))
+        names = [
+            pkg['name']
+            for pkg in installed
+            if pkg.get('editable_project_location') == repo_dir
+        ]
+        for name in names:
+            cmd = f'pip uninstall --break-system-packages -y {shlex.quote(name)}'
+            self.logger.debug(ssh(cmd))
 
     def _ensure_dest_exists(self, ssh: sh.Command, src_path: str, dest: str) -> None:
         q_dest = shlex.quote(dest)
