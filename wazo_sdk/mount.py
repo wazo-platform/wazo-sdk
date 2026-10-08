@@ -295,6 +295,7 @@ class Mounter:
     def _umount_python3(self, ssh: sh.Command, repo_name: str) -> None:
         repo_dir = os.path.join(self._remote_dir, repo_name)
         installed = json.loads(ssh('pip list -e --format json'))
+        self.logger.debug("installed=%s", installed)
         names = [
             pkg['name']
             for pkg in installed
