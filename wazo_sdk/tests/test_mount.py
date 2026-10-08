@@ -46,7 +46,10 @@ class TestPythonEditableInstall:
         mounter._mount_python3(ssh, 'my-repo')
 
         cmd = ssh.call_args[0][0]
-        assert 'pip install --break-system-packages --no-deps -e' in cmd
+        assert (
+            'pip install --break-system-packages --no-deps --no-build-isolation -e'
+            in cmd
+        )
         assert '/usr/src/wazo/my-repo' in cmd
         assert 'setup.py' not in cmd
 

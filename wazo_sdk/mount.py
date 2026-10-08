@@ -284,9 +284,10 @@ class Mounter:
         pyproject = shlex.quote(os.path.join(repo_dir, 'pyproject.toml'))
         ssh(f'while [ ! -e {setup} ] && [ ! -e {pyproject} ]; do sleep 0.2; done')
 
-        # --no-deps retains consistency of debian packaging
+        # --no-deps retains consistency of debian packaging;
+        # --no-build-isolation reuses system build tools instead of downloading
         cmd = (
-            'pip install --break-system-packages --no-deps '
+            'pip install --break-system-packages --no-deps --no-build-isolation '
             f'-e {shlex.quote(repo_dir)}'
         )
         self.logger.debug(ssh(cmd))

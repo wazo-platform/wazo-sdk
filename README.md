@@ -93,7 +93,8 @@ The project file has the following structure
 ```
 
 * project name: This is the name that matches your local source directory. ex: `wazo-auth`
-* python3: This will do a `pip install --break-system-packages --no-deps -e` when this project is mounted.
+* python3: This will do a `pip install --break-system-packages --no-deps --no-build-isolation -e` when this project is mounted;
+  the build requirements of the project (e.g. `setuptools`, `wheel`) must be installed on the remote host.
 * binds: This is a map of source and destination file/directory that should be overridden.
 * clean: A list of files to delete when unmounting the project.
 
