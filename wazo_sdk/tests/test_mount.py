@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import pathlib
 import signal
 import subprocess
@@ -36,6 +37,48 @@ def mounter(config: MagicMock, state: MagicMock) -> Mounter:
 @pytest.fixture
 def ssh() -> MagicMock:
     return MagicMock()
+
+
+class TestPythonEditableInstall:
+    def test_mount_uses_pip_editable_install(
+        self, mounter: Mounter, ssh: MagicMock
+    ) -> None:
+        mounter._mount_python3(ssh, 'my-repo')
+
+        cmd = ssh.call_args[0][0]
+        assert (
+            'pip install --break-system-packages --no-deps --no-build-isolation -e'
+            in cmd
+        )
+        assert '/usr/src/wazo/my-repo' in cmd
+        assert 'setup.py' not in cmd
+
+    def test_umount_uninstalls_package_found_by_project_location(
+        self, mounter: Mounter, ssh: MagicMock
+    ) -> None:
+        packages = [
+            {'name': 'other', 'editable_project_location': '/usr/src/wazo/other'},
+            {'name': 'my_pkg', 'editable_project_location': '/usr/src/wazo/my-repo'},
+        ]
+        ssh.return_value = json.dumps(packages)
+
+        mounter._umount_python3(ssh, 'my-repo')
+
+        cmds = [c[0][0] for c in ssh.call_args_list]
+        assert 'pip list' in cmds[0] and '--format json' in cmds[0]
+        assert 'pip uninstall --break-system-packages -y my_pkg' in cmds[1]
+        assert len(cmds) == 2
+
+    def test_umount_does_nothing_when_not_installed(
+        self, mounter: Mounter, ssh: MagicMock
+    ) -> None:
+        ssh.return_value = json.dumps(
+            [{'name': 'other', 'editable_project_location': '/usr/src/wazo/other'}]
+        )
+
+        mounter._umount_python3(ssh, 'my-repo')
+
+        assert ssh.call_count == 1
 
 
 class TestEnsureDestExists:

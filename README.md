@@ -93,7 +93,8 @@ The project file has the following structure
 ```
 
 * project name: This is the name that matches your local source directory. ex: `wazo-auth`
-* python3: This will do a `python3 setup.py develop` when this project is mounted.
+* python3: This will do a `pip install --break-system-packages --no-deps --no-build-isolation -e` when this project is mounted;
+  the build requirements of the project (e.g. `setuptools`, `wheel`) must be installed on the remote host.
 * binds: This is a map of source and destination file/directory that should be overridden.
 * clean: A list of files to delete when unmounting the project.
 
@@ -246,8 +247,8 @@ TL;DR: `pip list --verbose | grep -v 'dist-packages'` should show all python ins
 
 - Debian packages use `/usr/lib/python3/dist-packages/` for python libraries;
   `/usr/local/lib/python<version>/dist-packages/` is used for "external" (non-package-manager) installs, which should include those development installs managed by wdk;
-- Python sources installed with `setup.py develop` create `*.egg-link` files and add entries in an `easy-install.pth` file under `/usr/local/lib/python<version>/`;
-  check with `find /usr/local/lib -name '*.egg-link'` and `find /usr/local/lib -name 'easy-install.pth'`;
+- Python sources installed with `pip install -e` create `__editable__.*` files and a `*.dist-info` directory under `/usr/local/lib/python<version>/dist-packages/`;
+  check with `pip list -e`;
 - `pip list --verbose` shows all python packages installed along with their location;
   development installs will show the source directory, e.g.:
   ```
@@ -256,8 +257,8 @@ TL;DR: `pip list --verbose | grep -v 'dist-packages'` should show all python ins
   ------------------------- ----------- ------------------------- --------------------------------------- ---------
   wazo-agid                 1.1         /usr/src/wazo/wazo-agid   /usr/src/wazo/wazo-agid
   ```
-- To remove a development install, navigate to the development sources project directory (e.g. `/usr/src/wazo/<project>`), then run `python3 setup.py develop -u`;
-  If that fails or does not properly cleanup those installs, remove the egg link files manually and remove entries from the `easy-install.pth` files;
+- To remove a development install, navigate to the development sources project directory (e.g. `/usr/src/wazo/<project>`), then run `pip uninstall --break-system-packages <package-name>` (the name is shown by `pip list -e`);
+  If that fails or does not properly cleanup those installs, remove the `__editable__.*` files and the `*.dist-info` directory manually;
 - Python package installs may add binaries/console scripts (e.g. `wazo-*`) in `/usr/local/bin`;
   Check these against the console scripts defined in `/usr/src/wazo/<project>/setup.py`;
 
