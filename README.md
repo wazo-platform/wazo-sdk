@@ -93,7 +93,9 @@ The project file has the following structure
 ```
 
 * project name: This is the name that matches your local source directory. ex: `wazo-auth`
-* python3: This will do a `pip install --break-system-packages --no-deps --no-build-isolation -e` when this project is mounted;
+* python3: This will do a `pip install --break-system-packages --no-deps --no-build-isolation --config-settings editable_mode=strict -e` when this project is mounted;
+  [strict mode](https://setuptools.pypa.io/en/latest/userguide/development_mode.html) links the sources under `<project>/build/` on the remote host, so `build` is excluded from the sync;
+  mounting again (e.g. `wdk mount -r`) reinstalls, which is needed after adding or removing modules;
   the build requirements of the project (e.g. `setuptools`, `wheel`) must be installed on the remote host.
 * binds: This is a map of source and destination file/directory that should be overridden.
 * clean: A list of files to delete when unmounting the project.

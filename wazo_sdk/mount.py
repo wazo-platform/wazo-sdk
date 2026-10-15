@@ -65,7 +65,7 @@ sync {
     delay = 1,
     source = "{{ source }}",
     target = "{{ host }}:{{ destination }}",
-    exclude = {'.git', '.tox', 'node_modules', '__pycache__', '*.pyc'},
+    exclude = {'.git', '.tox', 'node_modules', '__pycache__', '*.pyc', 'build'},
     rsync = {
         xattrs = true,
         archive = true,
@@ -85,6 +85,7 @@ RSYNC_OPTIONS = [
     '--exclude=node_modules',
     '--exclude=__pycache__',
     '--exclude=*.pyc',
+    '--exclude=build',
 ]
 
 
@@ -284,10 +285,15 @@ class Mounter:
         pyproject = shlex.quote(os.path.join(repo_dir, 'pyproject.toml'))
         ssh(f'while [ ! -e {setup} ] && [ ! -e {pyproject} ]; do sleep 0.2; done')
 
-        # --no-deps retains consistency of debian packaging;
-        # --no-build-isolation reuses system build tools instead of downloading
+        # --no-deps: keep dependencies consistent with debian packaging
+        # --no-build-isolation: reuse system build tools instead of downloading
+        # editable_mode=strict: lenient mode adds an import hook to the end of
+        # sys.meta_path, so the packaged copy in dist-packages is imported instead
+        # https://setuptools.pypa.io/en/latest/userguide/development_mode.html
+        # https://docs.python.org/3/reference/import.html#the-meta-path
         cmd = (
             'pip install --break-system-packages --no-deps --no-build-isolation '
+            '--config-settings editable_mode=strict '
             f'-e {shlex.quote(repo_dir)}'
         )
         self.logger.debug(ssh(cmd))
