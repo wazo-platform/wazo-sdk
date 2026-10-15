@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 
-from wazo_sdk.mount import Mounter, SyncError, is_lsyncd_pid
+from wazo_sdk.mount import LSYNC_CONFIG_TEMPLATE, Mounter, SyncError, is_lsyncd_pid
 
 
 @pytest.fixture
@@ -47,11 +47,37 @@ class TestPythonEditableInstall:
 
         cmd = ssh.call_args[0][0]
         assert (
-            'pip install --break-system-packages --no-deps --no-build-isolation -e'
-            in cmd
+            'pip install --break-system-packages --no-deps --no-build-isolation' in cmd
         )
+        assert '-e /usr/src/wazo/my-repo' in cmd
         assert '/usr/src/wazo/my-repo' in cmd
         assert 'setup.py' not in cmd
+
+    def test_mount_uses_strict_editable_mode(
+        self, mounter: Mounter, ssh: MagicMock
+    ) -> None:
+        mounter._mount_python3(ssh, 'my-repo')
+
+        cmd = ssh.call_args[0][0]
+        assert '--config-settings editable_mode=strict' in cmd
+
+    def test_mounting_an_already_mounted_repo_reinstalls(
+        self, mounter: Mounter, config: MagicMock
+    ) -> None:
+        config.rsync_only = False
+        config.get_project_name.return_value = 'my-repo'
+        config.get_project.return_value = MagicMock(python3=True, bind={})
+        local_dir = '/local/src/my-repo'
+
+        with (
+            patch.object(mounter, '_resolve_local_dir', return_value=local_dir),
+            patch.object(mounter, '_is_mounted_and_running', return_value=True),
+            patch.object(mounter, '_mounted_local_dir', return_value=local_dir),
+            patch.object(mounter, '_mount_python3') as mount_python3,
+        ):
+            mounter.mount('my-repo')
+
+        mount_python3.assert_called_once()
 
     def test_umount_uninstalls_package_found_by_project_location(
         self, mounter: Mounter, ssh: MagicMock
@@ -211,6 +237,15 @@ class TestBindFiles:
         assert not any('mount --bind' in c[0][0] for c in ssh.call_args_list)
 
 
+class TestLsyncdConfig:
+    def test_excludes_build_dir_holding_the_editable_link_tree(self) -> None:
+        config = LSYNC_CONFIG_TEMPLATE.render(
+            source='/local/src/my-repo', host='test-host', destination='/remote'
+        )
+
+        assert "'build'" in config
+
+
 class TestStartSync:
     def test_rsync_command_excludes_are_separate_args(
         self, mounter: Mounter, config: MagicMock
@@ -232,6 +267,7 @@ class TestStartSync:
         assert '--exclude=node_modules' in command
         assert '--exclude=__pycache__' in command
         assert '--exclude=*.pyc' in command
+        assert '--exclude=build' in command
         assert not any('{' in arg for arg in command)
 
     def test_rsync_failure_raises(
