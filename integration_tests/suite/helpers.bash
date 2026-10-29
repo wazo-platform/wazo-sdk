@@ -48,11 +48,12 @@ docker_exec() {
 # ── Wait for SSH readiness ──
 
 wait_for_ssh() {
-    local retries=30
-    while ! ssh_target true 2>/dev/null; do
+    local retries=30 last_error
+    while ! last_error="$(ssh_target true 2>&1)"; do
         retries=$((retries - 1))
         if [ "$retries" -le 0 ]; then
-            echo "SSH not ready after 30 attempts" >&2
+            echo "SSH not ready after 30 attempts; last error: $last_error" >&2
+            docker compose -f "$INTEG_DIR/docker-compose.yml" logs --tail 20 ssh-target >&2 || true
             return 1
         fi
         sleep 0.5
