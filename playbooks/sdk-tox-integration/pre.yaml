@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install bats integration test dependencies
+      ansible.builtin.apt:
+        name:
+          - bats
+          - rsync
+          - lsyncd
+          - openssh-client
+        state: present
+        update_cache: true
