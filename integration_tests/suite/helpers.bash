@@ -11,7 +11,10 @@ COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-wdk-integ-$(printf '%s' "$PROJECT_
 export COMPOSE_PROJECT_NAME
 
 SSH_KEY="$INTEG_DIR/ssh_keys/test_id_rsa"
-SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
+SSH_OPTS=(-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
+
+# git cannot store 0600; ssh ignores a group/world-readable identity file
+chmod 600 "$SSH_KEY"
 
 export SSH_PUB_KEY
 SSH_PUB_KEY="$(cat "$INTEG_DIR/ssh_keys/test_id_rsa.pub")"
@@ -117,6 +120,7 @@ Host wdk-test-target
     Port ${SSH_PORT}
     User root
     IdentityFile ${SSH_KEY}
+    IdentitiesOnly yes
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null
     LogLevel ERROR
