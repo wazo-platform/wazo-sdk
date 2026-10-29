@@ -232,7 +232,16 @@ common_setup() {
     setup_wdk_cache
 }
 
+# Zuul's post playbook publishes $WAZO_TEST_DOCKER_LOGS_DIR/* (flat files)
+save_container_logs() {
+    [ -n "$WAZO_TEST_DOCKER_LOGS_DIR" ] || return 0
+    mkdir -p "$WAZO_TEST_DOCKER_LOGS_DIR"
+    docker compose -f "$INTEG_DIR/docker-compose.yml" logs --no-color ssh-target \
+        > "$WAZO_TEST_DOCKER_LOGS_DIR/$(basename "$BATS_TEST_FILENAME" .bats)-${BATS_TEST_NUMBER}.log" 2>&1 || true
+}
+
 common_teardown() {
+    save_container_logs
     stop_container
     [ -n "$LOCAL_REPO_DIR" ] && rm -rf "$LOCAL_REPO_DIR"
     if [ -n "$ALT_REPO_DIR" ]; then rm -rf "$ALT_REPO_DIR"; fi
