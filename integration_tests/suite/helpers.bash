@@ -5,6 +5,11 @@ INTEG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SUITE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$INTEG_DIR/.." && pwd)"
 
+# Unique per checkout: the default (directory name) is shared by every
+# worktree, so concurrent runs would tear down each other's containers.
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-wdk-integ-$(printf '%s' "$PROJECT_ROOT" | cksum | cut -d' ' -f1)}"
+export COMPOSE_PROJECT_NAME
+
 SSH_KEY="$INTEG_DIR/ssh_keys/test_id_rsa"
 SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
 
