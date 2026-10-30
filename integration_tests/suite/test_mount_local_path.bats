@@ -60,31 +60,13 @@ teardown() {
 
     run_wdk mount "wazo-test-service=$ALT_CHECKOUT"
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json
-with open('$state_file') as f:
-    state = json.load(f)
-mount = state['hosts']['wdk-test-target']['mounts']['wazo-test-service']
-assert mount['local_path'] == '$ALT_CHECKOUT', f'got {mount}'
-print('ok')
-"
-    [ "$output" = "ok" ]
+    [ "$(state_mount wazo-test-service local_path)" = "$ALT_CHECKOUT" ]
 }
 
 @test "mount without override records the default local path in state" {
     run_wdk mount wazo-test-service
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json
-with open('$state_file') as f:
-    state = json.load(f)
-mount = state['hosts']['wdk-test-target']['mounts']['wazo-test-service']
-assert mount['local_path'] == '$LOCAL_REPO_DIR/wazo-test-service', f'got {mount}'
-print('ok')
-"
-    [ "$output" = "ok" ]
+    [ "$(state_mount wazo-test-service local_path)" = "$LOCAL_REPO_DIR/wazo-test-service" ]
 }
 
 @test "mount --list reports the mounted checkout path" {
@@ -109,19 +91,7 @@ print('ok')
 @test "mount with a nonexistent path records no state" {
     run run_wdk mount "wazo-test-service=$BATS_TEST_TMPDIR/does-not-exist"
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json, os, sys
-if not os.path.exists('$state_file'):
-    print('ok')
-    sys.exit(0)
-with open('$state_file') as f:
-    state = json.load(f)
-mounts = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {})
-assert not mounts, f'expected no mounts recorded, got {mounts}'
-print('ok')
-"
-    [ "$output" = "ok" ]
+    [ -z "$(state_mount wazo-test-service)" ]
 }
 
 @test "mount with a nonexistent path does not sync anything" {
@@ -140,16 +110,7 @@ print('ok')
     run docker_exec mount
     [[ "$output" != *"/etc/wazo-test-service/config.yml"* ]]
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json
-with open('$state_file') as f:
-    state = json.load(f)
-mounts = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {})
-assert not mounts, f'expected empty mounts, got {mounts}'
-print('ok')
-"
-    [ "$output" = "ok" ]
+    [ -z "$(state_mount wazo-test-service)" ]
 }
 
 @test "remounting from a different path re-syncs from the new checkout" {
@@ -161,14 +122,5 @@ print('ok')
 
     docker_exec test -f /usr/src/wazo/wazo-test-service/MARKER
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json
-with open('$state_file') as f:
-    state = json.load(f)
-mount = state['hosts']['wdk-test-target']['mounts']['wazo-test-service']
-assert mount['local_path'] == '$ALT_CHECKOUT', f'got {mount}'
-print('ok')
-"
-    [ "$output" = "ok" ]
+    [ "$(state_mount wazo-test-service local_path)" = "$ALT_CHECKOUT" ]
 }

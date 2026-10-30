@@ -64,17 +64,7 @@ teardown() {
     run run_wdk mount wazo-test-service
     [ "$status" -ne 0 ]
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json, sys
-if not __import__('os').path.exists('$state_file'):
-    sys.exit(0)
-with open('$state_file') as f:
-    state = json.load(f)
-mounts = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {})
-assert not mounts, f'expected no mounts recorded, got {mounts}'
-"
-    [ "$status" -eq 0 ]
+    [ -z "$(state_mount wazo-test-service)" ]
 }
 
 @test "mount is idempotent (second mount does not fail)" {

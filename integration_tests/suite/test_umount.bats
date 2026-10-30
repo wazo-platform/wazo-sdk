@@ -38,11 +38,7 @@ teardown() {
 @test "umount removes state entry" {
     run_wdk umount wazo-test-service
 
-    local state_file="$WDK_CACHE_DIR/state"
-    if [ -f "$state_file" ]; then
-        run grep -c "wazo-test-service" "$state_file"
-        [ "$output" = "0" ] || [ "$status" -ne 0 ]
-    fi
+    [ -z "$(state_mount wazo-test-service)" ]
 }
 
 @test "umount cleans specified files" {

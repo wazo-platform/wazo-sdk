@@ -188,6 +188,45 @@ remote_inode() {
     docker_exec stat -c %i "$1"
 }
 
+# ── wdk state and lsyncd pidfile ──
+
+# Prints the mount recorded for <project> as JSON, or nothing if there is none.
+# With <field>, prints only that field's value.
+state_mount() {
+    python3 - "$WDK_CACHE_DIR/state" "$1" "${2:-}" <<'PY'
+import json
+import os
+import sys
+
+path, project, field = sys.argv[1:4]
+if not os.path.exists(path):
+    sys.exit(0)
+with open(path) as f:
+    state = json.load(f)
+mount = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {}).get(project)
+if not mount:
+    sys.exit(0)
+if field:
+    value = mount.get(field)
+    if value:
+        print(value)
+else:
+    print(json.dumps(mount))
+PY
+}
+
+# Prints the first lsyncd pidfile wdk wrote to its cache dir; fails if none.
+lsyncd_pidfile() {
+    local pidfile
+    for pidfile in "$WDK_CACHE_DIR"/*.pid; do
+        if [ -f "$pidfile" ]; then
+            echo "$pidfile"
+            return 0
+        fi
+    done
+    return 1
+}
+
 require_lsyncd() {
     if ! command -v lsyncd >/dev/null 2>&1; then
         skip "lsyncd not installed on the test runner"

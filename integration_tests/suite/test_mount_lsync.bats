@@ -30,17 +30,7 @@ teardown() {
     run run_wdk mount wazo-test-service
     [ "$status" -ne 0 ]
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json, sys
-if not __import__('os').path.exists('$state_file'):
-    sys.exit(0)
-with open('$state_file') as f:
-    state = json.load(f)
-mount = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {}).get('wazo-test-service')
-assert not mount, f'expected no mount recorded, got {mount}'
-"
-    [ "$status" -eq 0 ]
+    [ -z "$(state_mount wazo-test-service)" ]
 }
 
 @test "mount in lsync mode starts an lsyncd daemon" {
@@ -48,7 +38,7 @@ assert not mount, f'expected no mount recorded, got {mount}'
 
     # _start_sync writes a pidfile next to the lsync config in cache_dir
     local pidfile
-    pidfile="$(ls "$WDK_CACHE_DIR"/*.pid 2>/dev/null | head -n1)"
+    pidfile="$(lsyncd_pidfile)"
     [ -n "$pidfile" ]
     [ -f "$pidfile" ]
 
@@ -62,24 +52,16 @@ assert not mount, f'expected no mount recorded, got {mount}'
 @test "mount in lsync mode records lsync_pidfile in state" {
     run_wdk mount wazo-test-service
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json
-with open('$state_file') as f:
-    state = json.load(f)
-mount = state['hosts']['wdk-test-target']['mounts']['wazo-test-service']
-assert mount['lsync_pidfile'], f'expected lsync_pidfile, got {mount}'
-print(mount['lsync_pidfile'])
-"
-    [ "$status" -eq 0 ]
-    [[ "$output" == "$WDK_CACHE_DIR"/*.pid ]]
+    local recorded
+    recorded="$(state_mount wazo-test-service lsync_pidfile)"
+    [[ "$recorded" == "$WDK_CACHE_DIR"/*.pid ]]
 }
 
 @test "umount in lsync mode kills the lsyncd process" {
     run_wdk mount wazo-test-service
 
     local pidfile pid
-    pidfile="$(ls "$WDK_CACHE_DIR"/*.pid 2>/dev/null | head -n1)"
+    pidfile="$(lsyncd_pidfile)"
     pid="$(cat "$pidfile")"
     kill -0 "$pid"
 
@@ -99,7 +81,7 @@ print(mount['lsync_pidfile'])
     run_wdk mount wazo-test-service
 
     local pidfile
-    pidfile="$(ls "$WDK_CACHE_DIR"/*.pid 2>/dev/null | head -n1)"
+    pidfile="$(lsyncd_pidfile)"
     [ -f "$pidfile" ]
 
     run_wdk umount wazo-test-service
@@ -111,7 +93,7 @@ print(mount['lsync_pidfile'])
     run_wdk mount wazo-test-service
 
     local pidfile pid
-    pidfile="$(ls "$WDK_CACHE_DIR"/*.pid 2>/dev/null | head -n1)"
+    pidfile="$(lsyncd_pidfile)"
     pid="$(cat "$pidfile")"
 
     # Simulate lsyncd crash: SIGKILL leaves the pidfile orphaned (unlike SIGTERM,
@@ -136,23 +118,14 @@ print(mount['lsync_pidfile'])
     run_wdk mount wazo-test-service
     run_wdk umount wazo-test-service
 
-    local state_file="$WDK_CACHE_DIR/state"
-    run python3 -c "
-import json
-with open('$state_file') as f:
-    state = json.load(f)
-mounts = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {})
-assert not mounts, f'expected empty mounts, got {mounts}'
-print('ok')
-"
-    [ "$output" = "ok" ]
+    [ -z "$(state_mount wazo-test-service)" ]
 }
 
 @test "mount from a different path stops the previous lsyncd and syncs the new checkout" {
     run_wdk mount wazo-test-service
 
     local old_pidfile old_pid
-    old_pidfile="$(ls "$WDK_CACHE_DIR"/*.pid 2>/dev/null | head -n1)"
+    old_pidfile="$(lsyncd_pidfile)"
     old_pid="$(cat "$old_pidfile")"
     kill -0 "$old_pid"
 
@@ -171,7 +144,7 @@ print('ok')
     run_wdk mount wazo-test-service
 
     local pidfile pid
-    pidfile="$(ls "$WDK_CACHE_DIR"/*.pid 2>/dev/null | head -n1)"
+    pidfile="$(lsyncd_pidfile)"
     pid="$(cat "$pidfile")"
 
     run_wdk mount wazo-test-service
