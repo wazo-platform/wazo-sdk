@@ -7,6 +7,6 @@ services:
         SSH_PUB_KEY: "${SSH_PUB_KEY}"
     privileged: true
     ports:
-      - "0:22"
+      - "127.0.0.1:0:22"
     tmpfs:
       - /run
