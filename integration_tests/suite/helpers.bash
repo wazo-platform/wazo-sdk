@@ -154,7 +154,7 @@ setup_wdk_cache() {
 
 run_wdk() {
     local project_file="$INTEG_DIR/fixtures/project.yml"
-    local config_file="$WDK_CACHE_DIR/config.yml"
+    local config_file="$BATS_TEST_TMPDIR/config.yml"
     local rsync_only="${WDK_RSYNC_ONLY:-true}"
     local extra_flags=()
 

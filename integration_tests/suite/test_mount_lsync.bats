@@ -23,9 +23,10 @@ teardown() {
     skip "wdk exits 0 on sync failure: Mount.take_action catches all exceptions"
 
     # Shadow lsyncd with a fake that exits immediately with error
-    printf '#!/bin/sh\nexit 1\n' > "$BATS_TMPDIR/lsyncd"
-    chmod +x "$BATS_TMPDIR/lsyncd"
-    export PATH="$BATS_TMPDIR:$PATH"
+    mkdir -p "$BATS_TEST_TMPDIR/bin"
+    printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/lsyncd"
+    chmod +x "$BATS_TEST_TMPDIR/bin/lsyncd"
+    export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
 
     run run_wdk mount wazo-test-service
     [ "$status" -ne 0 ]
@@ -184,9 +185,10 @@ print('ok')
     create_alternate_checkout
 
     # shadow lsyncd so starting the sync for the new checkout fails
-    printf '#!/bin/sh\nexit 1\n' > "$BATS_TMPDIR/lsyncd"
-    chmod +x "$BATS_TMPDIR/lsyncd"
-    export PATH="$BATS_TMPDIR:$PATH"
+    mkdir -p "$BATS_TEST_TMPDIR/bin"
+    printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/lsyncd"
+    chmod +x "$BATS_TEST_TMPDIR/bin/lsyncd"
+    export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
 
     run_wdk mount "wazo-test-service=$ALT_CHECKOUT"
 

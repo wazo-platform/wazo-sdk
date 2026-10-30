@@ -107,7 +107,7 @@ print('ok')
 }
 
 @test "mount with a nonexistent path records no state" {
-    run run_wdk mount "wazo-test-service=$BATS_TMPDIR/does-not-exist"
+    run run_wdk mount "wazo-test-service=$BATS_TEST_TMPDIR/does-not-exist"
 
     local state_file="$WDK_CACHE_DIR/state"
     run python3 -c "
@@ -125,7 +125,7 @@ print('ok')
 }
 
 @test "mount with a nonexistent path does not sync anything" {
-    run run_wdk mount "wazo-test-service=$BATS_TMPDIR/does-not-exist"
+    run run_wdk mount "wazo-test-service=$BATS_TEST_TMPDIR/does-not-exist"
 
     run docker_exec test -e /usr/src/wazo/wazo-test-service/setup.py
     [ "$status" -ne 0 ]
