@@ -10,14 +10,14 @@ PROJECT_ROOT="$(cd "$INTEG_DIR/.." && pwd)"
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-wdk-integ-$(printf '%s' "$PROJECT_ROOT" | cksum | cut -d' ' -f1)}"
 export COMPOSE_PROJECT_NAME
 
-SSH_KEY="$INTEG_DIR/ssh_keys/test_id_rsa"
+SSH_KEY="$INTEG_DIR/ssh_keys/test_id_ed25519"
 SSH_OPTS=(-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
 
 # git cannot store 0600; ssh ignores a group/world-readable identity file
 chmod 600 "$SSH_KEY"
 
 export SSH_PUB_KEY
-SSH_PUB_KEY="$(cat "$INTEG_DIR/ssh_keys/test_id_rsa.pub")"
+SSH_PUB_KEY="$(cat "$SSH_KEY.pub")"
 
 # ── Docker lifecycle ──
 
