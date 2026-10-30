@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "$(date -Iseconds) systemctl $*" >> /var/log/mock-systemctl.log

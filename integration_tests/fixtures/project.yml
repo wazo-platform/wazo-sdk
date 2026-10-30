@@ -1,0 +1,7 @@
+wazo-test-service:
+  python3: true
+  service: wazo-test-service
+  bind:
+    etc/wazo-test-service/config.yml: /etc/wazo-test-service/config.yml
+  clean:
+    - /usr/local/bin/wazo-test-service

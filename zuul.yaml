@@ -2,3 +2,17 @@
     templates:
       - wazo-tox-linters-py311
       - wazo-tox-py311
+    wazo-check:
+      jobs:
+        - sdk-tox-integration
+    wazo-gate:
+      jobs:
+        - sdk-tox-integration
+
+- job:
+    name: sdk-tox-integration
+    description: Run wdk bats integration tests against a docker SSH target
+    parent: wazo-tox-integration-py311
+    pre-run: zuul.d/pre.yaml
+    vars:
+      docker_install_siblings: false
