@@ -21,10 +21,7 @@ teardown() {
 @test "mount does not record state when lsyncd fails to start" {
     skip "wdk exits 0 on sync failure: Mount.take_action catches all exceptions"
 
-    mkdir -p "$BATS_TEST_TMPDIR/bin"
-    printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/lsyncd"
-    chmod +x "$BATS_TEST_TMPDIR/bin/lsyncd"
-    export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
+    shadow_lsyncd_with_failure
 
     run run_wdk mount wazo-test-service
     [ "$status" -ne 0 ]
@@ -155,10 +152,7 @@ teardown() {
     create_alternate_checkout
 
     # shadow lsyncd so starting the sync for the new checkout fails
-    mkdir -p "$BATS_TEST_TMPDIR/bin"
-    printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/lsyncd"
-    chmod +x "$BATS_TEST_TMPDIR/bin/lsyncd"
-    export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
+    shadow_lsyncd_with_failure
 
     run_wdk mount "wazo-test-service=$ALT_CHECKOUT"
 

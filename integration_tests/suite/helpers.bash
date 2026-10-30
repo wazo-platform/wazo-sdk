@@ -233,6 +233,13 @@ require_lsyncd() {
     fi
 }
 
+shadow_lsyncd_with_failure() {
+    mkdir -p "$BATS_TEST_TMPDIR/bin"
+    printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/lsyncd"
+    chmod +x "$BATS_TEST_TMPDIR/bin/lsyncd"
+    export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
+}
+
 kill_lsyncd_from_cache() {
     [ -d "$WDK_CACHE_DIR" ] || return 0
     local pidfile pid
