@@ -243,8 +243,8 @@ save_container_logs() {
 common_teardown() {
     save_container_logs
     stop_container
-    [ -n "$LOCAL_REPO_DIR" ] && rm -rf "$LOCAL_REPO_DIR"
+    if [ -n "$LOCAL_REPO_DIR" ]; then rm -rf "$LOCAL_REPO_DIR"; fi
     if [ -n "$ALT_REPO_DIR" ]; then rm -rf "$ALT_REPO_DIR"; fi
-    [ -n "$SSH_WRAPPER_DIR" ] && rm -rf "$SSH_WRAPPER_DIR"
-    [ -n "$WDK_CACHE_DIR" ] && rm -rf "$WDK_CACHE_DIR"
+    if [ -n "$SSH_WRAPPER_DIR" ]; then rm -rf "$SSH_WRAPPER_DIR"; fi
+    if [ -n "$WDK_CACHE_DIR" ]; then rm -rf "$WDK_CACHE_DIR"; fi
 }
