@@ -191,6 +191,31 @@ wdk chores [--list]
 wdk chores <chore>
 ```
 
+## Running the integration tests
+
+The integration tests run `wdk` against a Docker container that acts as the remote server.
+They use [bats](https://github.com/bats-core/bats-core).
+
+These tools must be installed on the machine that runs the tests:
+
+* `docker`, with the `docker compose` plugin
+* `bats` (1.7 or later)
+* `jq`
+* `rsync` and `ssh`
+* `lsyncd` (optional; the tests for lsync mode are skipped without it)
+
+To run all tests:
+
+```sh
+tox -e integration
+```
+
+To run one test file, add its path after `--`:
+
+```sh
+tox -e integration -- integration_tests/suite/test_mount.bats
+```
+
 ## Troubleshooting
 
 ### Common causes
