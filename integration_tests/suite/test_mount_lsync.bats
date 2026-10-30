@@ -1,19 +1,18 @@
 #!/usr/bin/env bats
 
+load helpers.bash
+
 setup_file() {
-    load helpers.bash
-    common_setup_file
+    build_image
 }
 
 setup() {
-    load helpers.bash
     require_lsyncd
     export WDK_RSYNC_ONLY=false
     common_setup
 }
 
 teardown() {
-    load helpers.bash
     kill_lsyncd_from_cache
     common_teardown
     unset WDK_RSYNC_ONLY

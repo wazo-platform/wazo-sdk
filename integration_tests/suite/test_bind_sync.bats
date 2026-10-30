@@ -4,24 +4,23 @@
 # replaces the destination inode. A bind mount created from the old inode keeps
 # resolving to it, so the bind-mounted copy goes stale on the first local edit.
 
+load helpers.bash
+
 LOCAL_CONFIG_REL=etc/wazo-test-service/config.yml
 REMOTE_SRC=/usr/src/wazo/wazo-test-service/etc/wazo-test-service/config.yml
 BIND_DEST=/etc/wazo-test-service/config.yml
 
 setup_file() {
-    load helpers.bash
-    common_setup_file
+    build_image
 }
 
 setup() {
-    load helpers.bash
     require_lsyncd
     export WDK_RSYNC_ONLY=false
     common_setup
 }
 
 teardown() {
-    load helpers.bash
     kill_lsyncd_from_cache
     common_teardown
     unset WDK_RSYNC_ONLY

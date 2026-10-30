@@ -3,7 +3,7 @@
 load helpers.bash
 
 setup_file() {
-    common_setup_file
+    build_image
 }
 
 setup() {

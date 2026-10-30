@@ -1,18 +1,17 @@
 #!/usr/bin/env bats
 
+load helpers.bash
+
 setup_file() {
-    load helpers.bash
-    common_setup_file
+    build_image
 }
 
 setup() {
-    load helpers.bash
     common_setup
     run_wdk mount wazo-test-service
 }
 
 teardown() {
-    load helpers.bash
     common_teardown
 }
 

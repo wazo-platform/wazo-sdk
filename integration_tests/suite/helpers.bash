@@ -206,16 +206,6 @@ kill_lsyncd_from_cache() {
     done
 }
 
-# ── File-level setup/teardown (call from setup_file/teardown_file) ──
-
-common_setup_file() {
-    build_image
-}
-
-common_teardown_file() {
-    :
-}
-
 # ── Per-test setup/teardown ──
 
 common_setup() {
