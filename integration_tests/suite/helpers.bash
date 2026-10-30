@@ -155,22 +155,16 @@ setup_wdk_cache() {
 run_wdk() {
     local project_file="$INTEG_DIR/fixtures/project.yml"
     local config_file="$BATS_TEST_TMPDIR/config.yml"
-    local rsync_only="${WDK_RSYNC_ONLY:-true}"
-    local extra_flags=()
 
     cat > "$config_file" <<EOF
 remote_source: /usr/src/wazo
-rsync_only: $rsync_only
+rsync_only: ${WDK_RSYNC_ONLY:-true}
 cache_dir: $WDK_CACHE_DIR
 EOF
-    if [ "$rsync_only" = "true" ]; then
-        extra_flags+=(--rsync-only)
-    fi
     wdk --config "$config_file" \
         --project-file "$project_file" \
         --hostname wdk-test-target \
         --dev-dir "$LOCAL_REPO_DIR" \
-        "${extra_flags[@]}" \
         "$@"
 }
 
