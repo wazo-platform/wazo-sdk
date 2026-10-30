@@ -21,7 +21,6 @@ teardown() {
 @test "mount does not record state when lsyncd fails to start" {
     skip "wdk exits 0 on sync failure: Mount.take_action catches all exceptions"
 
-    # Shadow lsyncd with a fake that exits immediately with error
     mkdir -p "$BATS_TEST_TMPDIR/bin"
     printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/lsyncd"
     chmod +x "$BATS_TEST_TMPDIR/bin/lsyncd"
@@ -105,7 +104,6 @@ teardown() {
         retries=$((retries - 1))
     done
 
-    # Orphaned pidfile is still on disk
     [ -f "$pidfile" ]
 
     # Any successful wdk command triggers _remove_stale_config_files cleanup

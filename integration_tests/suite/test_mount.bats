@@ -43,7 +43,6 @@ teardown() {
 
     run_wdk mount wazo-test-service
 
-    # After mount, the dest should exist and be a bind mount
     docker_exec test -e /etc/wazo-test-service/config.yml
     run docker_exec mount
     [[ "$output" == *"/etc/wazo-test-service/config.yml"* ]]
