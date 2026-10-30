@@ -190,29 +190,25 @@ remote_inode() {
 
 # ── wdk state and lsyncd pidfile ──
 
+# Without jq, state_mount prints nothing and every "no state recorded"
+# assertion would pass; fail setup instead.
+require_jq() {
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "jq is required to run the integration tests" >&2
+        return 1
+    fi
+}
+
 # Prints the mount recorded for <project> as JSON, or nothing if there is none.
 # With <field>, prints only that field's value.
 state_mount() {
-    python3 - "$WDK_CACHE_DIR/state" "$1" "${2:-}" <<'PY'
-import json
-import os
-import sys
-
-path, project, field = sys.argv[1:4]
-if not os.path.exists(path):
-    sys.exit(0)
-with open(path) as f:
-    state = json.load(f)
-mount = state.get('hosts', {}).get('wdk-test-target', {}).get('mounts', {}).get(project)
-if not mount:
-    sys.exit(0)
-if field:
-    value = mount.get(field)
-    if value:
-        print(value)
-else:
-    print(json.dumps(mount))
-PY
+    local state_file="$WDK_CACHE_DIR/state"
+    [ -f "$state_file" ] || return 0
+    jq -r --arg project "$1" --arg field "${2:-}" '
+        .hosts["wdk-test-target"].mounts[$project] // empty
+        | select(length > 0)
+        | if $field == "" then tojson else .[$field] // empty end
+    ' "$state_file"
 }
 
 # Prints the first lsyncd pidfile wdk wrote to its cache dir; fails if none.
@@ -255,6 +251,7 @@ kill_lsyncd_from_cache() {
 # ── Per-test setup/teardown ──
 
 common_setup() {
+    require_jq
     start_container
     wait_for_ssh
     create_local_repo
