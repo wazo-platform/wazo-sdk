@@ -69,13 +69,16 @@ sync {
     rsync = {
         xattrs = true,
         archive = true,
-        perms = true
+        perms = true,
+        inplace = true
     }
 }
 '''
 )
 
+# --inplace: keep inodes so single-file bind mounts see updates
 RSYNC_OPTIONS = [
+    '--inplace',
     '--xattrs',
     '--archive',
     '--perms',

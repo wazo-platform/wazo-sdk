@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 #
-# lsyncd syncs with rsync's default write-to-temp-then-rename strategy, which
-# replaces the destination inode. A bind mount created from the old inode keeps
-# resolving to it, so the bind-mounted copy goes stale on the first local edit.
+# rsync's default write-to-temp-then-rename strategy replaces the destination
+# inode, which leaves a single-file bind mount on the old copy. wdk syncs with
+# --inplace so the bind-mounted file keeps following local edits.
 
 load helpers.bash
 
@@ -31,8 +31,6 @@ local_config_path() {
 }
 
 @test "lsyncd propagates a local edit to the bind-mounted file" {
-    skip "stale bind mount after rsync rename; fixed by fix/rebind-stale-file-binds"
-
     run_wdk mount wazo-test-service
 
     run docker_exec mount
@@ -51,8 +49,6 @@ local_config_path() {
 }
 
 @test "lsyncd sync keeps the bind mount and its source on the same inode" {
-    skip "stale bind mount after rsync rename; fixed by fix/rebind-stale-file-binds"
-
     run_wdk mount wazo-test-service
 
     local before
