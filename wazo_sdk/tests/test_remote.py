@@ -5,27 +5,25 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from wazo_sdk.remote import rsync_shell, ssh_args
 
 
-def _config(proxy_jump: str | None) -> MagicMock:
-    config = MagicMock()
-    config.hostname = 'root@wazo'
-    config.proxy_jump = proxy_jump
-    return config
+@pytest.mark.parametrize(
+    ('proxy_jump', 'args', 'shell'),
+    [
+        (
+            'alice@bastion:2200',
+            ['-J', 'alice@bastion:2200'],
+            'ssh -J alice@bastion:2200',
+        ),
+        (None, [], None),
+    ],
+)
+def test_ssh_goes_through_the_proxy_jump(
+    proxy_jump: str | None, args: list[str], shell: str | None
+) -> None:
+    config = MagicMock(proxy_jump=proxy_jump)
 
-
-class TestSshArgs:
-    def test_none_without_a_proxy_jump(self) -> None:
-        assert ssh_args(_config(None)) == []
-
-    def test_jump_through_the_proxy_jump(self) -> None:
-        assert ssh_args(_config('alice@bastion:2200')) == ['-J', 'alice@bastion:2200']
-
-
-class TestRsyncShell:
-    def test_none_without_a_proxy_jump(self) -> None:
-        assert rsync_shell(_config(None)) is None
-
-    def test_ssh_through_the_proxy_jump(self) -> None:
-        assert rsync_shell(_config('alice@bastion:2200')) == 'ssh -J alice@bastion:2200'
+    assert (ssh_args(config), rsync_shell(config)) == (args, shell)

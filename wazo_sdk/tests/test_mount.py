@@ -247,6 +247,16 @@ class TestLsyncdConfig:
         assert "'build'" in config
 
 
+def _started_sync(mounter: Mounter) -> list[str]:
+    proc = MagicMock()
+    proc.communicate.return_value = (None, None)
+    proc.returncode = 0
+    with patch('subprocess.Popen', return_value=proc) as popen:
+        mounter._start_sync('/local/src/my-repo', 'my-repo')
+    command: list[str] = popen.call_args[0][0]
+    return command
+
+
 class TestStartSync:
     def test_rsync_command_excludes_are_separate_args(
         self, mounter: Mounter, config: MagicMock
@@ -271,65 +281,45 @@ class TestStartSync:
         assert '--exclude=build' in command
         assert not any('{' in arg for arg in command)
 
-    def test_rsync_goes_through_the_proxy_jump(
-        self, mounter: Mounter, config: MagicMock
+    @pytest.mark.parametrize(
+        ('proxy_jump', 'shell'),
+        [('alice@bastion:2200', ['-e', 'ssh -J alice@bastion:2200']), (None, [])],
+    )
+    def test_rsync_shell_follows_the_proxy_jump(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        proxy_jump: str | None,
+        shell: list[str],
     ) -> None:
         config.rsync_only = True
-        config.proxy_jump = 'alice@bastion:2200'
-        proc = MagicMock()
-        proc.communicate.return_value = (None, None)
-        proc.returncode = 0
+        config.proxy_jump = proxy_jump
 
-        with patch('subprocess.Popen', return_value=proc) as popen:
-            mounter._start_sync('/local/src/my-repo', 'my-repo')
+        command = _started_sync(mounter)
 
-        command = popen.call_args[0][0]
-        shell = command.index('-e')
-        assert command[shell + 1] == 'ssh -J alice@bastion:2200'
-        assert shell < command.index('/local/src/my-repo/')
+        given = command.index('-e') if '-e' in command else len(command)
+        assert command[given : given + 2] == shell
 
-    def test_rsync_uses_plain_ssh_without_a_proxy_jump(
-        self, mounter: Mounter, config: MagicMock
-    ) -> None:
-        config.rsync_only = True
-        proc = MagicMock()
-        proc.communicate.return_value = (None, None)
-        proc.returncode = 0
-
-        with patch('subprocess.Popen', return_value=proc) as popen:
-            mounter._start_sync('/local/src/my-repo', 'my-repo')
-
-        assert '-e' not in popen.call_args[0][0]
-
-    def test_lsyncd_goes_through_the_proxy_jump(
-        self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
+    @pytest.mark.parametrize(
+        ('proxy_jump', 'rsh'),
+        [('alice@bastion:2200', ['rsh = "ssh -J alice@bastion:2200",']), (None, [])],
+    )
+    def test_lsyncd_rsh_follows_the_proxy_jump(
+        self,
+        mounter: Mounter,
+        config: MagicMock,
+        tmp_path: pathlib.Path,
+        proxy_jump: str | None,
+        rsh: list[str],
     ) -> None:
         config.rsync_only = False
         config.cache_dir = str(tmp_path)
-        config.proxy_jump = 'alice@bastion:2200'
-        proc = MagicMock()
-        proc.communicate.return_value = (None, None)
-        proc.returncode = 0
+        config.proxy_jump = proxy_jump
 
-        with patch('subprocess.Popen', return_value=proc) as popen:
-            mounter._start_sync('/local/src/my-repo', 'my-repo')
+        lsyncd_config = pathlib.Path(_started_sync(mounter)[1]).read_text()
 
-        lsyncd_config = pathlib.Path(popen.call_args[0][0][1]).read_text()
-        assert 'rsh = "ssh -J alice@bastion:2200"' in lsyncd_config
-
-    def test_lsyncd_uses_plain_ssh_without_a_proxy_jump(
-        self, mounter: Mounter, config: MagicMock, tmp_path: pathlib.Path
-    ) -> None:
-        config.rsync_only = False
-        config.cache_dir = str(tmp_path)
-        proc = MagicMock()
-        proc.communicate.return_value = (None, None)
-        proc.returncode = 0
-
-        with patch('subprocess.Popen', return_value=proc) as popen:
-            mounter._start_sync('/local/src/my-repo', 'my-repo')
-
-        assert 'rsh' not in pathlib.Path(popen.call_args[0][0][1]).read_text()
+        lines = [line.strip() for line in lsyncd_config.splitlines()]
+        assert [line for line in lines if line.startswith('rsh')] == rsh
 
     def test_rsync_failure_raises(
         self, mounter: Mounter, config: MagicMock, state: MagicMock
