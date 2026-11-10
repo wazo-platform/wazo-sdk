@@ -12,7 +12,10 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
-_JUMP_HOP = r'(?:[\w.][\w.-]*@)?(?:[\w.][\w.-]*|\[[0-9A-Fa-f:.]+\])(?::\d+)?'
+_JUMP_HOP = (
+    r'(?:[\w.+%][\w.+%@-]*@)?'
+    r'(?:[\w.][\w.-]*|\[[0-9A-Fa-f:.]+(?:%[\w.-]+)?\])(?::\d+)?'
+)
 _PROXY_JUMP = re.compile(rf'{_JUMP_HOP}(?:,{_JUMP_HOP})*', re.ASCII)
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'

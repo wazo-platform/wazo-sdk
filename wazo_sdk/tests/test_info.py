@@ -19,12 +19,13 @@ def test_info_shows_the_proxy_jump(
 ) -> None:
     (tmp_path / 'config.yml').write_text('proxy_jump: alice@bastion:2200\n')
     (tmp_path / 'project.yml').write_text('{}\n')
-    args = Namespace(config=str(tmp_path / 'config.yml'), dev_dir=str(tmp_path))
-    args.project_file, args.hostname, args.rsync_only, args.proxy_jump = (
-        str(tmp_path / 'project.yml'),
-        None,
-        False,
-        None,
+    args = Namespace(
+        config=str(tmp_path / 'config.yml'),
+        project_file=str(tmp_path / 'project.yml'),
+        hostname=None,
+        dev_dir=str(tmp_path),
+        rsync_only=False,
+        proxy_jump=None,
     )
     info = Info(MagicMock(), Namespace())
     info.service = ServiceManager(MagicMock(), Config(args))

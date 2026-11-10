@@ -47,6 +47,13 @@ class TestProxyJump:
                 'alice@bastion1,bob@bastion2:2200',
             ),
             ('{}\n', '[2001:db8::1]:22', '[2001:db8::1]:22'),
+            (
+                '{}\n',
+                'alice@corp.example.com@bastion',
+                'alice@corp.example.com@bastion',
+            ),
+            ('{}\n', 'alice+ops%x@bastion', 'alice+ops%x@bastion'),
+            ('{}\n', '[fe80::1%eth0]:22', '[fe80::1%eth0]:22'),
         ],
     )
     def test_comes_from_the_argument_then_the_config_file(
