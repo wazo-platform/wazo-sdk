@@ -74,6 +74,17 @@ The default location of the configuration file is `~/.config/wdk/config.yml` you
 If you wish to use another location for you configuration file you can use the `--config` flag
 when launching `wdk` or set the `WDK_CONFIG_FILE` environment variable to the config file location.
 
+### Reaching a host through a jump host
+
+When the Wazo host is only reachable through a bastion, set `proxy_jump` in the configuration file
+(or pass `--proxy-jump` to one command) to `[user@]host[:port]`. `wdk` then goes through it for
+every connection: remote commands (`ssh -J`), `rsync -e "ssh -J ..."` and lsyncd's `rsh`. Nothing
+needs to change in `~/.ssh/config`.
+
+```sh
+wdk --hostname root@10.0.0.12 --proxy-jump alice@bastion.example.com:22 mount wazo-calld
+```
+
 ### Project configuration
 
 Until everything can be guessed from the projects source code some information have to be configured

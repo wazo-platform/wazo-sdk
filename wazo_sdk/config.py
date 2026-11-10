@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
     class ConfigData(TypedDict):
         hostname: str
+        proxy_jump: str | None
         local_source: str
         remote_source: str
         project_file: str
@@ -103,6 +104,10 @@ class Config:
     @property
     def hostname(self) -> str | None:
         return self._args.hostname or self._file_config.get('hostname')
+
+    @property
+    def proxy_jump(self) -> str | None:
+        return self._args.proxy_jump or self._file_config.get('proxy_jump')
 
     @property
     def rsync_only(self) -> bool:

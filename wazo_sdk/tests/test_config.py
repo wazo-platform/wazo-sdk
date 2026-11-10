@@ -11,11 +11,16 @@ import pytest
 from wazo_sdk.config import Config, Project, ProjectConfigError
 
 
-def _make_config(tmp_path: pathlib.Path, project_yaml: str) -> Config:
+def _make_config(
+    tmp_path: pathlib.Path,
+    project_yaml: str = '{}\n',
+    config_yaml: str = '{}\n',
+    proxy_jump: str | None = None,
+) -> Config:
     project_file = tmp_path / 'project.yml'
     project_file.write_text(project_yaml)
     config_file = tmp_path / 'config.yml'
-    config_file.write_text('{}\n')
+    config_file.write_text(config_yaml)
 
     args = Namespace(
         config=str(config_file),
@@ -23,8 +28,28 @@ def _make_config(tmp_path: pathlib.Path, project_yaml: str) -> Config:
         hostname=None,
         dev_dir=None,
         rsync_only=False,
+        proxy_jump=proxy_jump,
     )
     return Config(args)
+
+
+class TestProxyJump:
+    def test_none_by_default(self, tmp_path: pathlib.Path) -> None:
+        assert _make_config(tmp_path).proxy_jump is None
+
+    def test_read_from_the_config_file(self, tmp_path: pathlib.Path) -> None:
+        config = _make_config(tmp_path, config_yaml='proxy_jump: alice@bastion:2200\n')
+
+        assert config.proxy_jump == 'alice@bastion:2200'
+
+    def test_argument_wins_over_the_config_file(self, tmp_path: pathlib.Path) -> None:
+        config = _make_config(
+            tmp_path,
+            config_yaml='proxy_jump: alice@bastion:2200\n',
+            proxy_jump='bob@other:22',
+        )
+
+        assert config.proxy_jump == 'bob@other:22'
 
 
 class TestProject:

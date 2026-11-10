@@ -20,6 +20,7 @@ import sh
 from jinja2 import Template
 
 from wazo_sdk.config import Config
+from wazo_sdk.remote import rsync_shell, ssh_to
 from wazo_sdk.state import State
 
 if TYPE_CHECKING:
@@ -67,6 +68,9 @@ sync {
     target = "{{ host }}:{{ destination }}",
     exclude = {'.git', '.tox', 'node_modules', '__pycache__', '*.pyc', 'build'},
     rsync = {
+{%- if rsh %}
+        rsh = "{{ rsh }}",
+{%- endif %}
         xattrs = true,
         archive = true,
         perms = true,
@@ -224,14 +228,14 @@ class Mounter:
             self._state.remove_mount(self._hostname, real_repo_name)
 
     def _apply_mount(self, repo_name: str, project: Project) -> None:
-        wazo = sh.ssh.bake(self._hostname)
+        wazo = ssh_to(self._config)
         if project.python3:
             self._mount_python3(wazo, repo_name)
         if project.bind:
             self._bind_files(wazo, repo_name, project.bind)
 
     def _unapply_mount(self, repo_name: str, project: Project) -> None:
-        wazo = sh.ssh.bake(self._hostname)
+        wazo = ssh_to(self._config)
         if project.python3:
             self._umount_python3(wazo, repo_name)
         if project.bind:
@@ -332,16 +336,21 @@ class Mounter:
         pid_filename: str | None = None
         communicate_kwargs: dict[str, Any] = {}
 
+        shell = rsync_shell(self._config)
         if self._config.rsync_only:
             sync_command = [
                 'rsync',
                 *RSYNC_OPTIONS,
+                *(['-e', shell] if shell else []),
                 f'{local_path}/',
                 f'{self._hostname}:{remote_path}/',
             ]
         else:
             config = LSYNC_CONFIG_TEMPLATE.render(
-                source=local_path, host=self._hostname, destination=remote_path
+                source=local_path,
+                host=self._hostname,
+                destination=remote_path,
+                rsh=shell,
             )
 
             with tempfile.NamedTemporaryFile(

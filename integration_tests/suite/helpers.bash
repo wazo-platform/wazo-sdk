@@ -163,9 +163,27 @@ cache_dir: $WDK_CACHE_DIR
 EOF
     wdk --config "$config_file" \
         --project-file "$project_file" \
-        --hostname wdk-test-target \
+        --hostname "${WDK_HOSTNAME:-wdk-test-target}" \
         --dev-dir "$LOCAL_REPO_DIR" \
         "$@"
+}
+
+# ── Proxy jump ──
+#
+# The target's compose service name only resolves on the docker network, so
+# wdk reaches it only through the container's own sshd, used as the jump.
+
+setup_proxy_jump() {
+    cat >> "$WDK_SSH_CONFIG" <<EOF
+
+Host ssh-target 127.0.0.1
+    User root
+    IdentityFile ${SSH_KEY}
+    IdentitiesOnly yes
+EOF
+    WDK_HOSTNAME=ssh-target
+    PROXY_JUMP="root@127.0.0.1:${SSH_PORT}"
+    export WDK_HOSTNAME PROXY_JUMP
 }
 
 # ── Remote content polling ──

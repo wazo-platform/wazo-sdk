@@ -3,9 +3,8 @@
 
 from logging import Logger
 
-import sh
-
 from wazo_sdk.config import Config
+from wazo_sdk.remote import ssh_to
 
 
 class ServiceManager:
@@ -16,7 +15,7 @@ class ServiceManager:
     def restart(self, service: str) -> None:
         project = self._config.get_project(service)
         service_name = project.service or self._config.get_project_name(service)
-        ssh = sh.ssh.bake(self._config.hostname)
+        ssh = ssh_to(self._config)
         ssh(f'systemctl restart {service_name}')
 
     def tailf(self, service: str) -> None:
@@ -26,6 +25,6 @@ class ServiceManager:
             project_name = self._config.get_project_name(service)
             log_filename = f'/var/log/{project_name}.log'
 
-        ssh = sh.ssh.bake(self._config.hostname)
+        ssh = ssh_to(self._config)
         for line in ssh.tail('-f', log_filename, _iter=True):
             print(line, end='')

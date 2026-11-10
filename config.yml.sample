@@ -1,6 +1,10 @@
 # The Wazo on which you wish to work: [user@]wazo.example.com
 hostname: wazo-dev
 
+# A jump host to reach it through, when it isn't reachable directly: [user@]host[:port]
+# Used for ssh, rsync and lsyncd alike; --proxy-jump sets it for one command
+# proxy_jump: alice@bastion.example.com:22
+
 # The location of you local copy of the Wazo source code
 local_source: ~/wazo
 
