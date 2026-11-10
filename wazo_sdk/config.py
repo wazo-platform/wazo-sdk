@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import re
 from argparse import Namespace
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -11,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
+_PROXY_JUMP = re.compile(r'(?:[\w.-]+@)?[\w.-]+(?::\d+)?')
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
@@ -88,6 +90,7 @@ class Config:
         self._args = args
         self._file_config = self._read_config_file()
         self._project_config = self._read_project_file()
+        self._proxy_jump = self._read_proxy_jump()
 
     @property
     def cache_dir(self) -> str:
@@ -107,7 +110,7 @@ class Config:
 
     @property
     def proxy_jump(self) -> str | None:
-        return self._args.proxy_jump or self._file_config.get('proxy_jump')
+        return self._proxy_jump
 
     @property
     def rsync_only(self) -> bool:
@@ -174,6 +177,12 @@ class Config:
     def _read_config_file(self) -> ConfigData:
         filename = os.path.expanduser(self._args.config)
         return self._read_yml_file(filename)  # type: ignore
+
+    def _read_proxy_jump(self) -> str | None:
+        jump = self._args.proxy_jump or self._file_config.get('proxy_jump')
+        if jump and not _PROXY_JUMP.fullmatch(jump):
+            raise ValueError(f'proxy_jump must be [user@]host[:port], got {jump!r}')
+        return jump
 
     def _read_project_file(self) -> dict[str, ProjectConfigData]:
         return self._read_yml_file(self.project_file)

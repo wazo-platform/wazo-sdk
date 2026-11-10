@@ -26,7 +26,7 @@ teardown() {
 }
 
 @test "mount without the proxy jump does not reach that host" {
-    run_wdk mount wazo-test-service
+    run run_wdk mount wazo-test-service
 
     run docker_exec test -e /usr/src/wazo/wazo-test-service/setup.py
     [ "$status" -ne 0 ]

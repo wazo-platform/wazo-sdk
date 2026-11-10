@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from wazo_sdk.remote import rsync_shell, ssh_to
+from wazo_sdk.remote import rsync_shell, ssh_args
 
 
 def _config(proxy_jump: str | None) -> MagicMock:
@@ -15,16 +15,12 @@ def _config(proxy_jump: str | None) -> MagicMock:
     return config
 
 
-class TestSshTo:
-    def test_connects_to_the_host(self) -> None:
-        command = str(ssh_to(_config(None)))
+class TestSshArgs:
+    def test_none_without_a_proxy_jump(self) -> None:
+        assert ssh_args(_config(None)) == []
 
-        assert command.split()[1:] == ['root@wazo']
-
-    def test_goes_through_the_proxy_jump(self) -> None:
-        command = str(ssh_to(_config('alice@bastion:2200')))
-
-        assert command.split()[1:] == ['-J', 'alice@bastion:2200', 'root@wazo']
+    def test_jump_through_the_proxy_jump(self) -> None:
+        assert ssh_args(_config('alice@bastion:2200')) == ['-J', 'alice@bastion:2200']
 
 
 class TestRsyncShell:

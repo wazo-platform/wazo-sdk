@@ -81,6 +81,10 @@ When the Wazo host is only reachable through a bastion, set `proxy_jump` in the 
 every connection: remote commands (`ssh -J`), `rsync -e "ssh -J ..."` and lsyncd's `rsh`. Nothing
 needs to change in `~/.ssh/config`.
 
+Mounts are remembered by hostname only, not by jump host: set `proxy_jump` in the configuration
+file, or pass the same `--proxy-jump` to every command for that host (`umount` included), so that
+wdk can reach the host again to clean up.
+
 ```sh
 wdk --hostname root@10.0.0.12 --proxy-jump alice@bastion.example.com:22 mount wazo-calld
 ```

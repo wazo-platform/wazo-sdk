@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 
 from argparse import Namespace
@@ -16,6 +16,7 @@ class Info(Command):
     def take_action(self, parsed_args: Namespace) -> None:
         service_config = self.service._config
         print(f'hostname: {service_config.hostname}')
+        print(f'proxy_jump: {service_config.proxy_jump}')
         print(f'project_file: {service_config.project_file}')
         print(f'config_file: {service_config._args.config}')
         print(f'local_source: {service_config.local_source}')

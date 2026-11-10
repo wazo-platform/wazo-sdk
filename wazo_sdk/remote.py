@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
+import shlex
 from typing import TYPE_CHECKING
 
 import sh
@@ -11,11 +12,13 @@ if TYPE_CHECKING:
 
 
 def rsync_shell(config: Config) -> str | None:
-    if not config.proxy_jump:
-        return None
-    return f'ssh -J {config.proxy_jump}'
+    args = ssh_args(config)
+    return shlex.join(['ssh', *args]) if args else None
+
+
+def ssh_args(config: Config) -> list[str]:
+    return ['-J', config.proxy_jump] if config.proxy_jump else []
 
 
 def ssh_to(config: Config) -> sh.Command:
-    jump = ['-J', config.proxy_jump] if config.proxy_jump else []
-    return sh.ssh.bake(*jump, config.hostname)
+    return sh.ssh.bake(*ssh_args(config), config.hostname)

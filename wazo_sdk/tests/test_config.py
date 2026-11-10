@@ -51,6 +51,25 @@ class TestProxyJump:
 
         assert config.proxy_jump == 'bob@other:22'
 
+    @pytest.mark.parametrize(
+        'value', ['bastion.example.com', 'alice@bastion.example.com:22', 'a_b@10.0.0.1']
+    )
+    def test_accepts_user_host_port(self, tmp_path: pathlib.Path, value: str) -> None:
+        assert _make_config(tmp_path, proxy_jump=value).proxy_jump == value
+
+    @pytest.mark.parametrize(
+        'value',
+        [
+            'alice@bastion -oProxyCommand=sh',
+            'alice@"bastion"',
+            'bastion:ssh',
+            'alice@bastion:22:33',
+        ],
+    )
+    def test_rejects_anything_else(self, tmp_path: pathlib.Path, value: str) -> None:
+        with pytest.raises(ValueError, match='proxy_jump'):
+            _make_config(tmp_path, proxy_jump=value)
+
 
 class TestProject:
     def test_defaults(self) -> None:
