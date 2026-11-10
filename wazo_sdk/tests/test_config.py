@@ -11,11 +11,16 @@ import pytest
 from wazo_sdk.config import Config, Project, ProjectConfigError
 
 
-def _make_config(tmp_path: pathlib.Path, project_yaml: str) -> Config:
+def _make_config(
+    tmp_path: pathlib.Path,
+    project_yaml: str = '{}\n',
+    config_yaml: str = '{}\n',
+    proxy_jump: str | None = None,
+) -> Config:
     project_file = tmp_path / 'project.yml'
     project_file.write_text(project_yaml)
     config_file = tmp_path / 'config.yml'
-    config_file.write_text('{}\n')
+    config_file.write_text(config_yaml)
 
     args = Namespace(
         config=str(config_file),
@@ -23,8 +28,61 @@ def _make_config(tmp_path: pathlib.Path, project_yaml: str) -> Config:
         hostname=None,
         dev_dir=None,
         rsync_only=False,
+        proxy_jump=proxy_jump,
     )
     return Config(args)
+
+
+class TestProxyJump:
+    @pytest.mark.parametrize(
+        ('config_yaml', 'argument', 'expected'),
+        [
+            ('{}\n', None, None),
+            ('proxy_jump: alice@bastion:2200\n', None, 'alice@bastion:2200'),
+            ('proxy_jump: alice@bastion:2200\n', 'bob@other', 'bob@other'),
+            ('proxy_jump: alice@bastion:2200\n', '', None),
+            (
+                '{}\n',
+                'alice@bastion1,bob@bastion2:2200',
+                'alice@bastion1,bob@bastion2:2200',
+            ),
+            ('{}\n', '[2001:db8::1]:22', '[2001:db8::1]:22'),
+            (
+                '{}\n',
+                'alice@corp.example.com@bastion',
+                'alice@corp.example.com@bastion',
+            ),
+            ('{}\n', 'alice+ops%x@bastion', 'alice+ops%x@bastion'),
+            ('{}\n', '[fe80::1%eth0]:22', '[fe80::1%eth0]:22'),
+        ],
+    )
+    def test_comes_from_the_argument_then_the_config_file(
+        self,
+        tmp_path: pathlib.Path,
+        config_yaml: str,
+        argument: str | None,
+        expected: str | None,
+    ) -> None:
+        config = _make_config(tmp_path, config_yaml=config_yaml, proxy_jump=argument)
+
+        assert config.proxy_jump == expected
+
+    @pytest.mark.parametrize(
+        'config_yaml',
+        [
+            'proxy_jump: alice@bastion -oProxyCommand=sh\n',
+            'proxy_jump: alice@"bastion"\n',
+            'proxy_jump: -v\n',
+            'proxy_jump: ssh://alice@bastion\n',
+            'proxy_jump: 2200\n',
+            'proxy_jump: alice@bastión\n',
+        ],
+    )
+    def test_rejects_anything_but_user_host_port(
+        self, tmp_path: pathlib.Path, config_yaml: str
+    ) -> None:
+        with pytest.raises(ValueError, match='proxy_jump'):
+            _make_config(tmp_path, config_yaml=config_yaml)
 
 
 class TestProject:

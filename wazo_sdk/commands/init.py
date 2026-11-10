@@ -1,4 +1,4 @@
-# Copyright 2018-2024 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2018-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from cliff.app import App
 from cliff.command import Command
 
 from wazo_sdk.config import Config
+from wazo_sdk.remote import ssh_to
 
 
 class APTPolicyInfo(TypedDict):
@@ -21,15 +22,15 @@ class APTPolicyInfo(TypedDict):
 
 
 class PackageManager:
-    hostname: str
+    config: Config
 
-    def __init__(self, hostname: str, logger: logging.Logger) -> None:
-        self.hostname = hostname
+    def __init__(self, config: Config, logger: logging.Logger) -> None:
+        self.config = config
         self.logger = logger
 
     def ensure_packages(self, packages: list[str]) -> Iterator[APTPolicyInfo]:
         if packages:
-            ssh = sh.ssh.bake(self.hostname, _return_cmd=True)
+            ssh = ssh_to(self.config).bake(_return_cmd=True)
             self._install_packages(ssh, packages)
 
             yield from self._check_packages(ssh, packages)
@@ -76,7 +77,7 @@ class Init(Command):
 
     def take_action(self, parsed_args: Namespace) -> None:
         assert self.config.hostname
-        package_manager = PackageManager(self.config.hostname, self.logger)
+        package_manager = PackageManager(self.config, self.logger)
         if not self.config.init_packages:
             self.app.stdout.write('no packages to install\n')
             return

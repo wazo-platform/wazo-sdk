@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import re
 from argparse import Namespace
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -11,6 +12,11 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
+_JUMP_HOP = (
+    r'(?:[\w.+%][\w.+%@-]*@)?'
+    r'(?:[\w.][\w.-]*|\[[0-9A-Fa-f:.]+(?:%[\w.-]+)?\])(?::\d+)?'
+)
+_PROXY_JUMP = re.compile(rf'{_JUMP_HOP}(?:,{_JUMP_HOP})*', re.ASCII)
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
@@ -24,6 +30,7 @@ if TYPE_CHECKING:
 
     class ConfigData(TypedDict):
         hostname: str
+        proxy_jump: str | None
         local_source: str
         remote_source: str
         project_file: str
@@ -87,6 +94,7 @@ class Config:
         self._args = args
         self._file_config = self._read_config_file()
         self._project_config = self._read_project_file()
+        self._proxy_jump = self._read_proxy_jump()
 
     @property
     def cache_dir(self) -> str:
@@ -103,6 +111,10 @@ class Config:
     @property
     def hostname(self) -> str | None:
         return self._args.hostname or self._file_config.get('hostname')
+
+    @property
+    def proxy_jump(self) -> str | None:
+        return self._proxy_jump
 
     @property
     def rsync_only(self) -> bool:
@@ -169,6 +181,19 @@ class Config:
     def _read_config_file(self) -> ConfigData:
         filename = os.path.expanduser(self._args.config)
         return self._read_yml_file(filename)  # type: ignore
+
+    def _read_proxy_jump(self) -> str | None:
+        jump = self._args.proxy_jump
+        if jump is None:
+            jump = self._file_config.get('proxy_jump')
+        if jump is None or jump == '':
+            return None
+        if not isinstance(jump, str) or not _PROXY_JUMP.fullmatch(jump):
+            raise ValueError(
+                f'proxy_jump must be [user@]host[:port], comma-separated for several '
+                f'hops, got {jump!r}'
+            )
+        return jump
 
     def _read_project_file(self) -> dict[str, ProjectConfigData]:
         return self._read_yml_file(self.project_file)
