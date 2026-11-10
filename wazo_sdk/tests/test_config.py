@@ -68,6 +68,7 @@ class TestProxyJump:
             'proxy_jump: -v\n',
             'proxy_jump: ssh://alice@bastion\n',
             'proxy_jump: 2200\n',
+            'proxy_jump: alice@bastión\n',
         ],
     )
     def test_rejects_anything_but_user_host_port(
