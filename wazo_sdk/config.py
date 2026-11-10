@@ -12,7 +12,8 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 _DEFAULT_PROJECT_FILENAME = '~/.config/wdk/project.yml'
-_PROXY_JUMP = re.compile(r'(?:[\w.-]+@)?[\w.-]+(?::\d+)?')
+_JUMP_HOP = r'(?:[\w.][\w.-]*@)?(?:[\w.][\w.-]*|\[[0-9A-Fa-f:.]+\])(?::\d+)?'
+_PROXY_JUMP = re.compile(rf'{_JUMP_HOP}(?:,{_JUMP_HOP})*')
 _DEFAULT_CACHE_DIR = '~/.local/cache/wdk'
 _DEFAULT_STATE_FILENAME = 'state'
 REPO_PREFIX = ['', 'wazo-', 'xivo-']
@@ -179,9 +180,16 @@ class Config:
         return self._read_yml_file(filename)  # type: ignore
 
     def _read_proxy_jump(self) -> str | None:
-        jump = self._args.proxy_jump or self._file_config.get('proxy_jump')
-        if jump and not _PROXY_JUMP.fullmatch(jump):
-            raise ValueError(f'proxy_jump must be [user@]host[:port], got {jump!r}')
+        jump = self._args.proxy_jump
+        if jump is None:
+            jump = self._file_config.get('proxy_jump')
+        if jump is None or jump == '':
+            return None
+        if not isinstance(jump, str) or not _PROXY_JUMP.fullmatch(jump):
+            raise ValueError(
+                f'proxy_jump must be [user@]host[:port], comma-separated for several '
+                f'hops, got {jump!r}'
+            )
         return jump
 
     def _read_project_file(self) -> dict[str, ProjectConfigData]:

@@ -32,6 +32,17 @@ teardown() {
     [ "$status" -ne 0 ]
 }
 
+@test "umount cleans up through the proxy jump" {
+    run_wdk --proxy-jump "$PROXY_JUMP" mount wazo-test-service
+    run docker_exec pip3 show wazo-test-service
+    [ "$status" -eq 0 ]
+
+    run_wdk --proxy-jump "$PROXY_JUMP" umount wazo-test-service
+
+    run docker_exec pip3 show wazo-test-service
+    [ "$status" -ne 0 ]
+}
+
 @test "lsyncd syncs through the proxy jump" {
     require_lsyncd
     export WDK_RSYNC_ONLY=false

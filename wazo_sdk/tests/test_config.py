@@ -51,8 +51,25 @@ class TestProxyJump:
 
         assert config.proxy_jump == 'bob@other:22'
 
+    def test_an_empty_argument_turns_off_the_config_file_one(
+        self, tmp_path: pathlib.Path
+    ) -> None:
+        config = _make_config(
+            tmp_path, config_yaml='proxy_jump: alice@bastion:2200\n', proxy_jump=''
+        )
+
+        assert config.proxy_jump is None
+
     @pytest.mark.parametrize(
-        'value', ['bastion.example.com', 'alice@bastion.example.com:22', 'a_b@10.0.0.1']
+        'value',
+        [
+            'bastion.example.com',
+            'alice@bastion.example.com:22',
+            'a_b@10.0.0.1',
+            'alice@bastion1,bob@bastion2:2200',
+            '[2001:db8::1]:22',
+            'alice@[2001:db8::1]',
+        ],
     )
     def test_accepts_user_host_port(self, tmp_path: pathlib.Path, value: str) -> None:
         assert _make_config(tmp_path, proxy_jump=value).proxy_jump == value
@@ -64,11 +81,20 @@ class TestProxyJump:
             'alice@"bastion"',
             'bastion:ssh',
             'alice@bastion:22:33',
+            '-v',
+            'alice@-oProxyCommand=sh',
+            '-alice@bastion',
+            'alice@bastion,',
+            'ssh://alice@bastion',
         ],
     )
     def test_rejects_anything_else(self, tmp_path: pathlib.Path, value: str) -> None:
         with pytest.raises(ValueError, match='proxy_jump'):
             _make_config(tmp_path, proxy_jump=value)
+
+    def test_rejects_a_value_that_is_not_text(self, tmp_path: pathlib.Path) -> None:
+        with pytest.raises(ValueError, match='proxy_jump'):
+            _make_config(tmp_path, config_yaml='proxy_jump: 2200\n')
 
 
 class TestProject:

@@ -48,7 +48,10 @@ class WDK(App):
         parser.add_argument('--hostname', help='The remote host when Wazo is installed')
         parser.add_argument(
             '--proxy-jump',
-            help='Reach the remote host through this jump host ([user@]host[:port])',
+            help=(
+                'Reach the remote host through this jump host: [user@]host[:port], '
+                'comma-separated for several hops; empty for none'
+            ),
         )
         parser.add_argument('--dev-dir', help='Where the local source code is')
         parser.add_argument(
